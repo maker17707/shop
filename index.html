@@ -3,517 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vape Store Catalog</title>
-    <!-- Telegram WebApp JS -->
+    <title>Vape Wheel Catalog</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-color: #3b82f6;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg-color: #0b0c10;
+            --accent-color: #8b5cf6;
+            --accent-glow: rgba(139, 92, 246, 0.35);
+            --text-color: #f3f4f6;
+            --subtext-color: #9ca3af;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
+        /* ИСПРАВЛЕНО: Включен вертикальный скролл страницы */
+        html, body {
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-            padding-bottom: 90px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, sans-serif;
+            overflow-y: auto !important; 
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* Header / Model Selector */
-        .header {
-            padding: 16px;
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        /* Ambient Backlight Glow */
+        .ambient-light {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 75%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            transition: background 0.5s ease;
+            filter: blur(35px);
+        }
+
+        header {
+            position: relative;
             z-index: 10;
-            border-bottom: 1px solid #334155;
-        }
-
-        .model-tabs {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            padding-bottom: 4px;
-        }
-
-        .model-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .tab-btn {
-            background: #334155;
-            color: var(--text-muted);
-            border: none;
-            padding: 10px 18px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .tab-btn.active {
-            background: var(--accent-color);
-            color: #ffffff;
-            box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
-        }
-
-        /* Product Card & Showcase */
-        .showcase {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            padding: 16px 16px 8px;
             text-align: center;
         }
 
-        .model-info {
-            margin-bottom: 15px;
-        }
-
-        .model-title {
-            font-size: 24px;
+        header h1 {
+            font-size: 18px;
             font-weight: 800;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #fff 40%, var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .model-subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-top: 4px;
+        /* Tabs Switcher */
+        .picker-section {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
-        .price-badge {
-            display: inline-block;
-            margin-top: 8px;
-            background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 16px;
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 3px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* 3D Drum Wheel Container */
-        .drum-container {
+        .tab {
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 13px;
+            color: var(--subtext-color);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .tab.active {
+            background: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 3px 12px var(--accent-glow);
+        }
+
+        /* Wheel Wrapper & Drum */
+        .wheel-wrapper {
             position: relative;
             width: 100%;
-            max-width: 320px;
-            height: 280px;
-            margin: 20px 0;
-            perspective: 1000px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .drum-glow {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.6;
-            transition: background 0.4s ease, transform 0.4s ease;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .device-image-wrap {
-            position: absolute;
-            z-index: 3;
-            width: 160px;
             height: 220px;
+            perspective: 800px;
+            overflow: hidden;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+        }
+
+        .wheel-selection-overlay {
+            position: absolute;
+            top: 50%;
+            left: 8%;
+            right: 8%;
+            transform: translateY(-50%);
+            height: 52px;
+            border-top: 1.5px solid var(--accent-color);
+            border-bottom: 1.5px solid var(--accent-color);
+            background: rgba(255, 255, 255, 0.02);
             pointer-events: none;
+            z-index: 5;
+            box-shadow: 0 0 12px var(--accent-glow);
+            border-radius: 10px;
         }
 
-        .device-image {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));
-            transition: transform 0.3s ease;
+        .wheel-drum {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            touch-action: none;
         }
 
-        /* Wheel Flavors Wheel CSS */
-        .wheel-list {
-            position: relative;
-            width: 280px;
-            height: 280px;
-            list-style: none;
-            z-index: 2;
-            touch-action: pan-y;
-        }
-
+        /* Wheel Item Style */
         .wheel-item {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform-origin: center center;
-            cursor: pointer;
-            transition: opacity 0.3s, transform 0.3s;
-        }
-
-        .flavor-chip {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
-            background: #1e293b;
-            border: 1px solid #334155;
-            color: #fff;
-            white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .flavor-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-
-        .wheel-item.selected .flavor-chip {
-            border-color: #fff;
-            transform: scale(1.15);
-            box-shadow: 0 0 20px currentColor;
-        }
-
-        .selected-flavor-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-top: 10px;
-            min-height: 26px;
-            color: #f8fafc;
-        }
-
-        /* Controls / Cart Actions */
-        .actions {
-            width: 100%;
-            max-width: 320px;
-            display: flex;
-            gap: 12px;
-            margin-top: 15px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 14px;
-            border-radius: 16px;
-            border: none;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-add {
-            background: var(--accent-color);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-        }
-
-        .btn-add:active {
-            transform: scale(0.97);
-        }
-
-        /* Bottom Floating Bar for Total & Checkout */
-        .cart-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #1e293b;
-            border-top: 1px solid #334155;
-            padding: 12px 20px;
+            width: 250px;
+            height: 48px;
+            margin-top: -24px;
+            margin-left: -125px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            z-index: 100;
-            backdrop-filter: blur(10px);
+            padding: 0 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            backdrop-filter: blur(6px);
+            backface-visibility: hidden;
         }
 
-        .cart-info {
-            display: flex;
-            flex-direction: column;
+        .wheel-item img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.6));
         }
 
-        .cart-count {
-            font-size: 12px;
-            color: var(--text-muted);
+        .wheel-item-info {
+            flex: 1;
+            margin-left: 12px;
+            text-align: left;
         }
 
-        .cart-total {
-            font-size: 18px;
-            font-weight: 800;
-            color: #f8fafc;
-        }
-
-        .btn-checkout {
-            background: #22c55e;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 14px;
+        .wheel-item-title {
+            font-size: 14px;
             font-weight: 700;
-            border: none;
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
-            cursor: pointer;
+            color: #fff;
+            white-space: nowrap;
         }
 
-        .btn-checkout:disabled {
-            background: #475569;
-            box-shadow: none;
-            cursor: not-allowed;
+        .wheel-item-sub {
+            font-size: 11px;
+            color: var(--subtext-color);
+        }
+
+        .wheel-item-price {
+            font-size: 14px;
+            font-weight: 800;
+            color: #34d399;
+        }
+
+        /* Footer Action */
+        .info-card {
+            margin: 0 16px 16px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .info-details h3 { font-size: 15px; font-weight: 700; }
+        .info-details p { font-size: 12px; color: var(--subtext-color); margin-top: 2px; }
+
+        .btn-order {
+            padding: 12px 22px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent-color), #4c1d95);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            outline: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- Top Tabs (Models) -->
-    <div class="header">
-        <div class="model-tabs" id="modelTabs"></div>
-    </div>
+    <div class="ambient-light" id="ambientLight"></div>
 
-    <!-- Main Card View -->
-    <div class="showcase">
-        <div class="model-info">
-            <h1 class="model-title" id="modelTitle">Загрузка...</h1>
-            <div class="model-subtitle" id="modelPuffs">-</div>
-            <div class="price-badge" id="modelPrice">0 ₸</div>
+    <header>
+        <h1>CyberVape Store</h1>
+    </header>
+
+    <div class="picker-section">
+        <div class="tabs">
+            <div class="tab active" id="tabModel" onclick="switchTab('model')">1. Устройство</div>
+            <div class="tab" id="tabFlavor" onclick="switchTab('flavor')">2. Вкус</div>
         </div>
 
-        <!-- 3D Drum / Wheel Showcase -->
-        <div class="drum-container">
-            <div class="drum-glow" id="drumGlow"></div>
-            <div class="device-image-wrap">
-                <img id="deviceImg" class="device-image" src="" alt="Device">
-            </div>
-            <div class="wheel-list" id="wheelList"></div>
-        </div>
-
-        <!-- Current Selected Flavor Name -->
-        <div class="selected-flavor-title" id="selectedFlavorName">-</div>
-
-        <!-- Action Buttons -->
-        <div class="actions">
-            <button class="btn btn-add" id="btnAddCart" onclick="addToCart()">
-                🛒 Добавить в корзину
-            </button>
+        <div class="wheel-wrapper" id="wheelContainer">
+            <div class="wheel-selection-overlay"></div>
+            <div class="wheel-drum" id="wheelDrum"></div>
         </div>
     </div>
 
-    <!-- Fixed Cart Checkout Bar -->
-    <div class="cart-bar">
-        <div class="cart-info">
-            <span class="cart-count" id="cartCountText">Корзина пуста</span>
-            <span class="cart-total" id="cartTotalText">0 ₸</span>
+    <div class="info-card">
+        <div class="info-details">
+            <h3 id="summaryTitle">ElfBar 10000</h3>
+            <p id="summarySub">Выберите вкус</p>
         </div>
-        <button class="btn-checkout" id="btnCheckout" onclick="sendOrder()" disabled>
-            Оформить
-        </button>
+        <button class="btn-order" onclick="submitOrder()">В корзину</button>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) { tg.expand(); tg.ready(); }
 
-        let catalog = [];
-        let currentModelIndex = 0;
-        let currentFlavorIndex = 0;
-        let cart = [];
+        const catalog = [
+            {
+                id: "m1",
+                name: "ElfBar BC10000",
+                puffs: "10 000 тяг",
+                price: "7 500 ₸",
+                image: "https://pngimg.com/uploads/vape/vape_PNG37.png",
+                flavors: [
+                    { id: "f11", name: "Черника Лёд", color: "#3b82f6", bgGlow: "rgba(59, 130, 246, 0.35)", icon: "https://png.pngtree.com/png-clipart/20230114/ourmid/pngtree-blueberry-fruit-transparent-background-png-image_6561565.png" },
+                    { id: "f12", name: "Кислая Малина", color: "#ef4444", bgGlow: "rgba(239, 68, 68, 0.35)", icon: "https://png.pngtree.com/png-clipart/20230114/ourmid/pngtree-raspberry-fruit-png-image_6561566.png" },
+                    { id: "f13", name: "Арбуз Мята", color: "#10b981", bgGlow: "rgba(16, 185, 129, 0.35)", icon: "https://png.pngtree.com/png-clipart/20230114/ourmid/pngtree-watermelon-png-image_6561567.png" }
+                ]
+            },
+            {
+                id: "m2",
+                name: "Lost Mary 16000",
+                puffs: "16 000 тяг",
+                price: "9 000 ₸",
+                image: "https://pngimg.com/uploads/vape/vape_PNG37.png",
+                flavors: [
+                    { id: "f21", name: "Двойное Яблоко", color: "#22c55e", bgGlow: "rgba(34, 197, 94, 0.35)", icon: "" },
+                    { id: "f22", name: "Клубника Банан", color: "#f59e0b", bgGlow: "rgba(245, 158, 11, 0.35)", icon: "" }
+                ]
+            }
+        ];
 
-        // Fetch catalog dynamically loaded from catalog.json (generated from Excel)
-        async function loadCatalog() {
-            try {
-                const response = await fetch('catalog.json');
-                catalog = await response.json();
-                if (catalog.length > 0) {
-                    renderModelTabs();
-                    selectModel(0);
+        let currentTab = 'model';
+        let selectedModelIndex = 0;
+        let selectedFlavorIndex = 0;
+
+        let currentAngle = 0;
+        let startY = 0;
+        let currentY = 0;
+        let isDragging = false;
+        let lastSelectedIndex = -1;
+
+        const drum = document.getElementById('wheelDrum');
+        const container = document.getElementById('wheelContainer');
+
+        function renderDrum() {
+            drum.innerHTML = '';
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            const itemCount = items.length;
+            
+            const angleStep = 360 / Math.max(itemCount, 8); 
+            const radius = 85; 
+
+            items.forEach((item, index) => {
+                const el = document.createElement('div');
+                el.className = 'wheel-item';
+                
+                const itemAngle = index * angleStep;
+                el.style.transform = `rotateX(${-itemAngle}deg) translateZ(${radius}px)`;
+
+                if (currentTab === 'model') {
+                    el.innerHTML = `
+                        <img src="${item.image}" alt="vape">
+                        <div class="wheel-item-info">
+                            <div class="wheel-item-title">${item.name}</div>
+                            <div class="wheel-item-sub">${item.puffs}</div>
+                        </div>
+                        <div class="wheel-item-price">${item.price}</div>
+                    `;
                 } else {
-                    document.getElementById('modelTitle').innerText = "Товаров нет в наличии";
+                    const iconHtml = item.icon ? `<img src="${item.icon}" alt="flavor">` : `<div style="width:16px;height:16px;border-radius:50%;background:${item.color}"></div>`;
+                    el.innerHTML = `
+                        ${iconHtml}
+                        <div class="wheel-item-info">
+                            <div class="wheel-item-title">${item.name}</div>
+                            <div class="wheel-item-sub">В наличии</div>
+                        </div>
+                    `;
                 }
-            } catch (e) {
-                console.error("Ошибка загрузки catalog.json", e);
-                document.getElementById('modelTitle').innerText = "Ошибка загрузки каталога";
-            }
-        }
-
-        function renderModelTabs() {
-            const tabsContainer = document.getElementById('modelTabs');
-            tabsContainer.innerHTML = '';
-            
-            catalog.forEach((model, index) => {
-                const btn = document.createElement('button');
-                btn.className = `tab-btn ${index === currentModelIndex ? 'active' : ''}`;
-                btn.innerText = model.name;
-                btn.onclick = () => selectModel(index);
-                tabsContainer.appendChild(btn);
+                drum.appendChild(el);
             });
+
+            const activeIndex = currentTab === 'model' ? selectedModelIndex : selectedFlavorIndex;
+            currentAngle = activeIndex * angleStep;
+            updateDrumTransform();
         }
 
-        function selectModel(index) {
-            currentModelIndex = index;
-            currentFlavorIndex = 0;
+        function updateDrumTransform() {
+            drum.style.transform = `rotateX(${currentAngle}deg)`;
             
-            renderModelTabs();
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            const angleStep = 360 / Math.max(items.length, 8);
             
-            const model = catalog[currentModelIndex];
-            document.getElementById('modelTitle').innerText = model.name;
-            document.getElementById('modelPuffs').innerText = model.puffs;
-            document.getElementById('modelPrice').innerText = model.price;
-            document.getElementById('deviceImg').src = model.image || 'https://via.placeholder.com/160x220?text=Vape';
-            
-            renderFlavorsWheel();
-            updateFlavorSelection();
-        }
+            let normalizedAngle = (currentAngle % 360 + 360) % 360;
+            let activeIdx = Math.round(normalizedAngle / angleStep) % items.length;
 
-        function renderFlavorsWheel() {
-            const wheel = document.getElementById('wheelList');
-            wheel.innerHTML = '';
-            const flavors = catalog[currentModelIndex].flavors;
-            const count = flavors.length;
-            const radius = 110; // Radius around device
+            if (activeIdx !== lastSelectedIndex) {
+                lastSelectedIndex = activeIdx;
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.selectionChanged();
+                }
 
-            flavors.forEach((flavor, idx) => {
-                const angle = (idx / count) * (2 * Math.PI) - (Math.PI / 2);
-                const x = Math.cos(angle) * radius;
-                const y = Math.sin(angle) * radius;
-
-                const li = document.createElement('div');
-                li.className = `wheel-item ${idx === currentFlavorIndex ? 'selected' : ''}`;
-                li.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
-                li.onclick = () => {
-                    currentFlavorIndex = idx;
-                    updateFlavorSelection();
-                };
-
-                li.innerHTML = `
-                    <div class="flavor-chip" style="color:${flavor.color}; border-color:${flavor.color}">
-                        <span class="flavor-dot" style="background:${flavor.color}"></span>
-                        ${flavor.name}
-                    </div>
-                `;
-                wheel.appendChild(li);
-            });
-        }
-
-        function updateFlavorSelection() {
-            const model = catalog[currentModelIndex];
-            const flavor = model.flavors[currentFlavorIndex];
-            
-            if (!flavor) return;
-
-            document.getElementById('selectedFlavorName').innerText = flavor.name;
-            document.getElementById('selectedFlavorName').style.color = flavor.color;
-            
-            // Update Glow
-            const glow = document.getElementById('drumGlow');
-            glow.style.background = flavor.color;
-
-            // Update Selected Class in Wheel
-            const items = document.querySelectorAll('.wheel-item');
-            items.forEach((item, idx) => {
-                if (idx === currentFlavorIndex) {
-                    item.classList.add('selected');
+                if (currentTab === 'model') {
+                    selectedModelIndex = activeIdx;
+                    selectedFlavorIndex = 0;
                 } else {
-                    item.classList.remove('selected');
+                    selectedFlavorIndex = activeIdx;
                 }
-            });
-        }
-
-        // Cart Logic
-        function addToCart() {
-            const model = catalog[currentModelIndex];
-            const flavor = model.flavors[currentFlavorIndex];
-            
-            const rawPrice = parseInt(model.price.replace(/[^0-9]/g, '')) || 0;
-
-            const existingItem = cart.find(i => i.modelId === model.id && i.flavorId === flavor.id);
-            if (existingItem) {
-                existingItem.count += 1;
-            } else {
-                cart.push({
-                    modelId: model.id,
-                    model: model.name,
-                    flavorId: flavor.id,
-                    flavor: flavor.name,
-                    priceNum: rawPrice,
-                    count: 1
-                });
-            }
-            
-            // Animation feedback
-            tg.HapticFeedback.impactOccurred('medium');
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            const totalCount = cart.reduce((sum, item) => sum + item.count, 0);
-            const totalPrice = cart.reduce((sum, item) => sum + (item.priceNum * item.count), 0);
-
-            const cartCountText = document.getElementById('cartCountText');
-            const cartTotalText = document.getElementById('cartTotalText');
-            const btnCheckout = document.getElementById('btnCheckout');
-
-            if (totalCount > 0) {
-                cartCountText.innerText = `Выбрано товаров: ${totalCount}`;
-                cartTotalText.innerText = `${totalPrice.toLocaleString()} ₸`;
-                btnCheckout.disabled = false;
-            } else {
-                cartCountText.innerText = 'Корзина пуста';
-                cartTotalText.innerText = '0 ₸';
-                btnCheckout.disabled = true;
+                updateSummary();
             }
         }
 
-        function sendOrder() {
-            if (cart.length === 0) return;
+        function updateSummary() {
+            const model = catalog[selectedModelIndex];
+            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
 
-            const totalPrice = cart.reduce((sum, item) => sum + (item.priceNum * item.count), 0);
+            document.getElementById('summaryTitle').innerText = model.name;
+            document.getElementById('summarySub').innerText = `Вкус: ${flavor.name} • ${model.price}`;
 
-            const orderData = {
-                items: cart,
-                total_price: `${totalPrice.toLocaleString()} ₸`
-            };
-
-            // Send order data back to Telegram Bot
-            tg.sendData(JSON.stringify(orderData));
+            document.documentElement.style.setProperty('--accent-color', flavor.color);
+            document.documentElement.style.setProperty('--accent-glow', flavor.bgGlow);
         }
 
-        // Initialize App
-        document.addEventListener('DOMContentLoaded', loadCatalog);
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tabModel').classList.toggle('active', tab === 'model');
+            document.getElementById('tabFlavor').classList.toggle('active', tab === 'flavor');
+            lastSelectedIndex = -1;
+            renderDrum();
+        }
+
+        container.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startY = e.touches[0].clientY;
+            drum.style.transition = 'none';
+        }, { passive: true });
+
+        container.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            currentY = e.touches[0].clientY;
+            const deltaY = startY - currentY;
+            currentAngle += deltaY * 0.35;
+            startY = currentY;
+            updateDrumTransform();
+        }, { passive: true });
+
+        container.addEventListener('touchend', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            snapToItem();
+        });
+
+        function snapToItem() {
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            const angleStep = 360 / Math.max(items.length, 8);
+            currentAngle = Math.round(currentAngle / angleStep) * angleStep;
+            drum.style.transition = 'transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1)';
+            updateDrumTransform();
+        }
+
+        function submitOrder() {
+            const model = catalog[selectedModelIndex];
+            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
+
+            if (tg) {
+                tg.HapticFeedback.impactOccurred('medium');
+                tg.sendData(JSON.stringify({
+                    model_id: model.id,
+                    model_name: model.name,
+                    flavor_id: flavor.id,
+                    flavor_name: flavor.name,
+                    price: model.price
+                }));
+            } else {
+                alert(`В корзину: ${model.name} (${flavor.name})`);
+            }
+        }
+
+        renderDrum();
     </script>
 </body>
 </html>
