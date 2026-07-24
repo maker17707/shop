@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vape Store Catalog</title>
+    <!-- Telegram WebApp JS -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            padding-bottom: 90px;
+        }
+
+        /* Header / Model Selector */
+        .header {
+            padding: 16px;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid #334155;
+        }
+
+        .model-tabs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: 4px;
+        }
+
+        .model-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            background: #334155;
+            color: var(--text-muted);
+            border: none;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-color);
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Product Card & Showcase */
+        .showcase {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .model-info {
+            margin-bottom: 15px;
+        }
+
+        .model-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .model-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .price-badge {
+            display: inline-block;
+            margin-top: 8px;
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* 3D Drum Wheel Container */
+        .drum-container {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            height: 280px;
+            margin: 20px 0;
+            perspective: 1000px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drum-glow {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.6;
+            transition: background 0.4s ease, transform 0.4s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .device-image-wrap {
+            position: absolute;
+            z-index: 3;
+            width: 160px;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .device-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));
+            transition: transform 0.3s ease;
+        }
+
+        /* Wheel Flavors Wheel CSS */
+        .wheel-list {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            list-style: none;
+            z-index: 2;
+            touch-action: pan-y;
+        }
+
+        .wheel-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: center center;
+            cursor: pointer;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .flavor-chip {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #fff;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .flavor-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .wheel-item.selected .flavor-chip {
+            border-color: #fff;
+            transform: scale(1.15);
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .selected-flavor-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 10px;
+            min-height: 26px;
+            color: #f8fafc;
+        }
+
+        /* Controls / Cart Actions */
+        .actions {
+            width: 100%;
+            max-width: 320px;
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 16px;
+            border: none;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-add {
+            background: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-add:active {
+            transform: scale(0.97);
+        }
+
+        /* Bottom Floating Bar for Total & Checkout */
+        .cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .cart-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-count {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .cart-total {
+            font-size: 18px;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+
+        .btn-checkout {
+            background: #22c55e;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            border: none;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+            cursor: pointer;
+        }
+
+        .btn-checkout:disabled {
+            background: #475569;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Tabs (Models) -->
+    <div class="header">
+        <div class="model-tabs" id="modelTabs"></div>
+    </div>
+
+    <!-- Main Card View -->
+    <div class="showcase">
+        <div class="model-info">
+            <h1 class="model-title" id="modelTitle">Загрузка...</h1>
+            <div class="model-subtitle" id="modelPuffs">-</div>
+            <div class="price-badge" id="modelPrice">0 ₸</div>
+        </div>
+
+        <!-- 3D Drum / Wheel Showcase -->
+        <div class="drum-container">
+            <div class="drum-glow" id="drumGlow"></div>
+            <div class="device-image-wrap">
+                <img id="deviceImg" class="device-image" src="" alt="Device">
+            </div>
+            <div class="wheel-list" id="wheelList"></div>
+        </div>
+
+        <!-- Current Selected Flavor Name -->
+        <div class="selected-flavor-title" id="selectedFlavorName">-</div>
+
+        <!-- Action Buttons -->
+        <div class="actions">
+            <button class="btn btn-add" id="btnAddCart" onclick="addToCart()">
+                🛒 Добавить в корзину
+            </button>
+        </div>
+    </div>
+
+    <!-- Fixed Cart Checkout Bar -->
+    <div class="cart-bar">
+        <div class="cart-info">
+            <span class="cart-count" id="cartCountText">Корзина пуста</span>
+            <span class="cart-total" id="cartTotalText">0 ₸</span>
+        </div>
+        <button class="btn-checkout" id="btnCheckout" onclick="sendOrder()" disabled>
+            Оформить
+        </button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let catalog = [];
+        let currentModelIndex = 0;
+        let currentFlavorIndex = 0;
+        let cart = [];
+
+        // Fetch catalog dynamically loaded from catalog.json (generated from Excel)
+        async function loadCatalog() {
+            try {
+                const response = await fetch('catalog.json');
+                catalog = await response.json();
+                if (catalog.length > 0) {
+                    renderModelTabs();
+                    selectModel(0);
+                } else {
+                    document.getElementById('modelTitle').innerText = "Товаров нет в наличии";
+                }
+            } catch (e) {
+                console.error("Ошибка загрузки catalog.json", e);
+                document.getElementById('modelTitle').innerText = "Ошибка загрузки каталога";
+            }
+        }
+
+        function renderModelTabs() {
+            const tabsContainer = document.getElementById('modelTabs');
+            tabsContainer.innerHTML = '';
+            
+            catalog.forEach((model, index) => {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${index === currentModelIndex ? 'active' : ''}`;
+                btn.innerText = model.name;
+                btn.onclick = () => selectModel(index);
+                tabsContainer.appendChild(btn);
+            });
+        }
+
+        function selectModel(index) {
+            currentModelIndex = index;
+            currentFlavorIndex = 0;
+            
+            renderModelTabs();
+            
+            const model = catalog[currentModelIndex];
+            document.getElementById('modelTitle').innerText = model.name;
+            document.getElementById('modelPuffs').innerText = model.puffs;
+            document.getElementById('modelPrice').innerText = model.price;
+            document.getElementById('deviceImg').src = model.image || 'https://via.placeholder.com/160x220?text=Vape';
+            
+            renderFlavorsWheel();
+            updateFlavorSelection();
+        }
+
+        function renderFlavorsWheel() {
+            const wheel = document.getElementById('wheelList');
+            wheel.innerHTML = '';
+            const flavors = catalog[currentModelIndex].flavors;
+            const count = flavors.length;
+            const radius = 110; // Radius around device
+
+            flavors.forEach((flavor, idx) => {
+                const angle = (idx / count) * (2 * Math.PI) - (Math.PI / 2);
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+
+                const li = document.createElement('div');
+                li.className = `wheel-item ${idx === currentFlavorIndex ? 'selected' : ''}`;
+                li.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
+                li.onclick = () => {
+                    currentFlavorIndex = idx;
+                    updateFlavorSelection();
+                };
+
+                li.innerHTML = `
+                    <div class="flavor-chip" style="color:${flavor.color}; border-color:${flavor.color}">
+                        <span class="flavor-dot" style="background:${flavor.color}"></span>
+                        ${flavor.name}
+                    </div>
+                `;
+                wheel.appendChild(li);
+            });
+        }
+
+        function updateFlavorSelection() {
+            const model = catalog[currentModelIndex];
+            const flavor = model.flavors[currentFlavorIndex];
+            
+            if (!flavor) return;
+
+            document.getElementById('selectedFlavorName').innerText = flavor.name;
+            document.getElementById('selectedFlavorName').style.color = flavor.color;
+            
+            // Update Glow
+            const glow = document.getElementById('drumGlow');
+            glow.style.background = flavor.color;
+
+            // Update Selected Class in Wheel
+            const items = document.querySelectorAll('.wheel-item');
+            items.forEach((item, idx) => {
+                if (idx === currentFlavorIndex) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        // Cart Logic
+        function addToCart() {
+            const model = catalog[currentModelIndex];
+            const flavor = model.flavors[currentFlavorIndex];
+            
+            const rawPrice = parseInt(model.price.replace(/[^0-9]/g, '')) || 0;
+
+            const existingItem = cart.find(i => i.modelId === model.id && i.flavorId === flavor.id);
+            if (existingItem) {
+                existingItem.count += 1;
+            } else {
+                cart.push({
+                    modelId: model.id,
+                    model: model.name,
+                    flavorId: flavor.id,
+                    flavor: flavor.name,
+                    priceNum: rawPrice,
+                    count: 1
+                });
+            }
+            
+            // Animation feedback
+            tg.HapticFeedback.impactOccurred('medium');
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const totalCount = cart.reduce((sum, item) => sum + item.count, 0);
+            const totalPrice = cart.reduce((sum, item) => sum + (item.priceNum * item.count), 0);
+
+            const cartCountText = document.getElementById('cartCountText');
+            const cartTotalText = document.getElementById('cartTotalText');
+            const btnCheckout = document.getElementById('btnCheckout');
+
+            if (totalCount > 0) {
+                cartCountText.innerText = `Выбрано товаров: ${totalCount}`;
+                cartTotalText.innerText = `${totalPrice.toLocaleString()} ₸`;
+                btnCheckout.disabled = false;
+            } else {
+                cartCountText.innerText = 'Корзина пуста';
+                cartTotalText.innerText = '0 ₸';
+                btnCheckout.disabled = true;
+            }
+        }
+
+        function sendOrder() {
+            if (cart.length === 0) return;
+
+            const totalPrice = cart.reduce((sum, item) => sum + (item.priceNum * item.count), 0);
+
+            const orderData = {
+                items: cart,
+                total_price: `${totalPrice.toLocaleString()} ₸`
+            };
+
+            // Send order data back to Telegram Bot
+            tg.sendData(JSON.stringify(orderData));
+        }
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', loadCatalog);
+    </script>
+</body>
+</html>
