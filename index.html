@@ -121,6 +121,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            cursor: grab;
+        }
+
+        .wheel-wrapper:active {
+            cursor: grabbing;
         }
 
         .wheel-selection-overlay {
@@ -129,7 +134,7 @@
             left: 6%;
             right: 6%;
             transform: translateY(-50%);
-            height: 54px;
+            height: 58px;
             border-top: 1.5px solid var(--accent-color);
             border-bottom: 1.5px solid var(--accent-color);
             background: rgba(255, 255, 255, 0.02);
@@ -152,14 +157,14 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 270px;
-            height: 50px;
-            margin-top: -25px;
-            margin-left: -135px;
+            width: 280px;
+            height: 52px;
+            margin-top: -26px;
+            margin-left: -140px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
+            padding: 0 14px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 14px;
@@ -167,17 +172,30 @@
             backface-visibility: hidden;
         }
 
+        /* Стилизация вырезанной PNG картинки девайса */
+        .wheel-item-img {
+            height: 40px;
+            width: auto;
+            max-width: 38px;
+            object-fit: contain;
+            margin-right: 10px;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
+            pointer-events: none;
+        }
+
         .wheel-item-icon {
             width: 18px;
             height: 18px;
             border-radius: 50%;
             box-shadow: 0 0 8px currentColor;
+            flex-shrink: 0;
         }
 
         .wheel-item-info {
             flex: 1;
-            margin-left: 12px;
+            margin-left: 8px;
             text-align: left;
+            overflow: hidden;
         }
 
         .wheel-item-title {
@@ -185,6 +203,8 @@
             font-weight: 700;
             color: #fff;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .wheel-item-sub {
@@ -196,6 +216,8 @@
             font-size: 14px;
             font-weight: 800;
             color: #34d399;
+            flex-shrink: 0;
+            margin-left: 8px;
         }
 
         /* Order Info Card */
@@ -273,6 +295,7 @@
                 "name": "soPRO-20000",
                 "puffs": "20 000 затяжек",
                 "price": "8 500 ₸",
+                "image": "sopro20000.png",
                 "flavors": [
                     { "id": "f101", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.35)" },
                     { "id": "f102", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.35)" },
@@ -286,6 +309,7 @@
                 "name": "PA-10000",
                 "puffs": "10 000 затяжек",
                 "price": "6 500 ₸",
+                "image": "pa10000.png",
                 "flavors": [
                     { "id": "f201", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.35)" },
                     { "id": "f202", "name": "Клубника Банан с ЧЗ", "color": "#f59e0b", "bgGlow": "rgba(245, 158, 11, 0.35)" },
@@ -304,6 +328,7 @@
                 "name": "Slim-8000",
                 "puffs": "8 000 затяжек",
                 "price": "5 500 ₸",
+                "image": "slim8000.png",
                 "flavors": [
                     { "id": "f301", "name": "Клубника Арбуз", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.35)" },
                     { "id": "f302", "name": "Черника Малина Персик", "color": "#6366f1", "bgGlow": "rgba(99, 102, 241, 0.35)" },
@@ -360,7 +385,9 @@
                 el.style.transform = `rotateX(${-itemAngle}deg) translateZ(${radius}px)`;
 
                 if (currentTab === 'model') {
+                    const imgHtml = item.image ? `<img class="wheel-item-img" src="${item.image}" alt="${item.name}">` : '';
                     el.innerHTML = `
+                        ${imgHtml}
                         <div class="wheel-item-info">
                             <div class="wheel-item-title">${item.name}</div>
                             <div class="wheel-item-sub">${item.puffs}</div>
@@ -446,27 +473,37 @@
             }
         }
 
-        // Touch events
-        container.addEventListener('touchstart', (e) => {
+        // --- Touch & Mouse Events ---
+        function startDrag(clientY) {
             isDragging = true;
-            startY = e.touches[0].clientY;
+            startY = clientY;
             drum.style.transition = 'none';
-        }, { passive: true });
+        }
 
-        container.addEventListener('touchmove', (e) => {
+        function moveDrag(clientY) {
             if (!isDragging) return;
-            currentY = e.touches[0].clientY;
+            currentY = clientY;
             const deltaY = startY - currentY;
             currentAngle += deltaY * 0.35;
             startY = currentY;
             updateDrumTransform();
-        }, { passive: true });
+        }
 
-        container.addEventListener('touchend', () => {
+        function stopDrag() {
             if (!isDragging) return;
             isDragging = false;
             snapToItem();
-        });
+        }
+
+        // Touch
+        container.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientY), { passive: true });
+        container.addEventListener('touchmove', (e) => moveDrag(e.touches[0].clientY), { passive: true });
+        container.addEventListener('touchend', stopDrag);
+
+        // Mouse (ПК версия)
+        container.addEventListener('mousedown', (e) => startDrag(e.clientY));
+        window.addEventListener('mousemove', (e) => moveDrag(e.clientY));
+        window.addEventListener('mouseup', stopDrag);
 
         function snapToItem() {
             const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
