@@ -239,6 +239,7 @@
             margin-left: 10px;
         }
 
+        /* КАРТОЧКА СНИЗУ (ФИКСИРОВАННЫЕ РАЗМЕРЫ КНОПКИ) */
         .info-card {
             margin: 0 16px;
             padding: 16px;
@@ -249,14 +250,34 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
             z-index: 10;
         }
 
-        .info-details h3 { font-size: 15px; font-weight: 700; }
-        .info-details p { font-size: 12px; color: var(--subtext-color); margin-top: 3px; }
+        .info-details {
+            flex: 1;
+            min-width: 0; /* Обязательно для правильной работы ellipsis */
+        }
+
+        .info-details h3 { 
+            font-size: 15px; 
+            font-weight: 700; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .info-details p { 
+            font-size: 12px; 
+            color: var(--subtext-color); 
+            margin-top: 3px; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
         .btn-order {
-            padding: 14px 22px;
+            padding: 14px 20px;
             font-size: 14px;
             font-weight: 700;
             color: #fff;
@@ -267,6 +288,8 @@
             box-shadow: 0 4px 15px var(--accent-glow);
             outline: none;
             transition: all 0.2s ease;
+            white-space: nowrap; /* Запрещаем перенос строк */
+            flex-shrink: 0;     /* Кнопка не будет сжиматься */
         }
 
         body.mode-flavor .btn-order {
@@ -604,7 +627,7 @@
             }
 
             const btn = document.getElementById('actionBtn');
-            btn.innerText = currentTab === 'model' ? 'Выбрать вкус →' : 'Сделать заказ';
+            btn.innerText = currentTab === 'model' ? 'Выбрать вкус →' : 'Заказать';
         }
 
         function switchTab(tab) {
@@ -632,7 +655,6 @@
             const model = catalog[selectedModelIndex];
             const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
 
-            // Заполняем данные на странице подтверждения
             document.getElementById('checkoutImg').src = model.image || '';
             document.getElementById('checkoutFlavorDot').style.backgroundColor = flavor.color || '#10b981';
             document.getElementById('checkoutFlavorDot').style.color = flavor.color || '#10b981';
@@ -644,7 +666,6 @@
 
             document.getElementById('pageTitle').innerText = 'Подтверждение заказа';
 
-            // Переключаем секции
             document.getElementById('pickerSection').style.display = 'none';
             document.getElementById('infoCard').style.display = 'none';
             document.getElementById('checkoutSection').style.display = 'flex';
@@ -667,7 +688,6 @@
         function confirmOrder() {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
             
-            // Сюда мы добавим следующий шаг, о котором вы расскажете!
             alert('Переход к следующему шагу...');
         }
 
