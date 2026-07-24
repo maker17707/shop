@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vape Store Catalog</title>
+    <title>Vape Store Catalog - Theme Tester</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -12,6 +12,46 @@
             --accent-glow: rgba(139, 92, 246, 0.35);
             --text-color: #f3f4f6;
             --subtext-color: #9ca3af;
+            --img-size: 44px;
+            --wheel-radius: 110px;
+            --item-height: 56px;
+        }
+
+        /* --- СТИЛИ ТЕМ (Theme Switcher Preset) --- */
+        body.theme-neon {
+            --bg-color: #0d0e15;
+            --accent-color: #ff3366;
+            --accent-glow: rgba(255, 51, 102, 0.45);
+            --img-size: 52px;
+            --wheel-radius: 125px;
+            --item-height: 58px;
+        }
+
+        body.theme-cyber {
+            --bg-color: #050b14;
+            --accent-color: #00f2fe;
+            --accent-glow: rgba(0, 242, 254, 0.4);
+            --img-size: 42px;
+            --wheel-radius: 100px;
+            --item-height: 50px;
+        }
+
+        body.theme-clean {
+            --bg-color: #121212;
+            --accent-color: #a855f7;
+            --accent-glow: rgba(168, 85, 247, 0.3);
+            --img-size: 46px;
+            --wheel-radius: 135px;
+            --item-height: 54px;
+        }
+
+        body.theme-bigfocus {
+            --bg-color: #0a0a0c;
+            --accent-color: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.4);
+            --img-size: 64px;
+            --wheel-radius: 140px;
+            --item-height: 68px;
         }
 
         * {
@@ -28,8 +68,8 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, sans-serif;
-            overflow-y: auto !important;
-            -webkit-overflow-scrolling: touch;
+            overflow: hidden;
+            transition: background-color 0.4s ease;
         }
 
         body {
@@ -37,38 +77,70 @@
             flex-direction: column;
             justify-content: space-between;
             position: relative;
-            padding-bottom: 24px;
+            padding-bottom: 20px;
         }
 
-        /* Ambient Glow Background */
+        /* Панель переключателя тем */
+        .theme-switcher-bar {
+            position: relative;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .theme-btn {
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-btn.active {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Ambient Light */
         .ambient-light {
             position: absolute;
-            top: 20%;
+            top: 25%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 280px;
-            height: 280px;
-            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 75%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
             border-radius: 50%;
             pointer-events: none;
             z-index: 0;
-            transition: background 0.5s ease;
-            filter: blur(35px);
+            transition: all 0.5s ease;
+            filter: blur(40px);
         }
 
         header {
             position: relative;
             z-index: 10;
-            padding: 20px 16px 10px;
+            padding: 12px 16px 6px;
             text-align: center;
         }
 
         header h1 {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 800;
             letter-spacing: 1px;
             text-transform: uppercase;
-            background: linear-gradient(135deg, #fff 40%, var(--accent-color));
+            background: linear-gradient(135deg, #fff 30%, var(--accent-color));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -81,7 +153,6 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin: 10px 0 20px;
         }
 
         /* Tabs Switcher */
@@ -89,9 +160,9 @@
             display: flex;
             background: rgba(255, 255, 255, 0.06);
             backdrop-filter: blur(12px);
-            border-radius: 16px;
+            border-radius: 14px;
             padding: 4px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
@@ -99,7 +170,7 @@
             padding: 8px 18px;
             font-size: 13px;
             font-weight: 600;
-            border-radius: 12px;
+            border-radius: 10px;
             color: var(--subtext-color);
             cursor: pointer;
             transition: all 0.25s ease;
@@ -115,8 +186,8 @@
         .wheel-wrapper {
             position: relative;
             width: 100%;
-            height: 240px;
-            perspective: 800px;
+            height: 260px;
+            perspective: 900px;
             overflow: hidden;
             display: flex;
             justify-content: center;
@@ -124,24 +195,23 @@
             cursor: grab;
         }
 
-        .wheel-wrapper:active {
-            cursor: grabbing;
-        }
+        .wheel-wrapper:active { cursor: grabbing; }
 
         .wheel-selection-overlay {
             position: absolute;
             top: 50%;
-            left: 6%;
-            right: 6%;
+            left: 5%;
+            right: 5%;
             transform: translateY(-50%);
-            height: 58px;
+            height: calc(var(--item-height) + 6px);
             border-top: 1.5px solid var(--accent-color);
             border-bottom: 1.5px solid var(--accent-color);
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.03);
             pointer-events: none;
             z-index: 5;
-            box-shadow: 0 0 15px var(--accent-glow);
-            border-radius: 12px;
+            box-shadow: 0 0 20px var(--accent-glow);
+            border-radius: 14px;
+            transition: all 0.3s ease;
         }
 
         .wheel-drum {
@@ -157,49 +227,50 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 280px;
-            height: 52px;
-            margin-top: -26px;
-            margin-left: -140px;
+            width: 300px;
+            height: var(--item-height);
+            margin-top: calc(var(--item-height) / -2);
+            margin-left: -150px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 14px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 14px;
-            backdrop-filter: blur(6px);
+            padding: 0 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
             backface-visibility: hidden;
+            transition: height 0.3s ease, margin 0.3s ease, border-color 0.3s ease;
         }
 
-        /* Стилизация вырезанной PNG картинки девайса */
+        /* Картинка девайса */
         .wheel-item-img {
-            height: 40px;
+            height: var(--img-size);
             width: auto;
-            max-width: 38px;
+            max-width: 60px;
             object-fit: contain;
-            margin-right: 10px;
-            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
+            margin-right: 12px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7));
             pointer-events: none;
+            transition: height 0.3s ease;
         }
 
         .wheel-item-icon {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            box-shadow: 0 0 8px currentColor;
+            box-shadow: 0 0 10px currentColor;
             flex-shrink: 0;
         }
 
         .wheel-item-info {
             flex: 1;
-            margin-left: 8px;
             text-align: left;
             overflow: hidden;
         }
 
         .wheel-item-title {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
             color: #fff;
             white-space: nowrap;
@@ -210,14 +281,15 @@
         .wheel-item-sub {
             font-size: 11px;
             color: var(--subtext-color);
+            margin-top: 2px;
         }
 
         .wheel-item-price {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 800;
             color: #34d399;
             flex-shrink: 0;
-            margin-left: 8px;
+            margin-left: 10px;
         }
 
         /* Order Info Card */
@@ -227,7 +299,7 @@
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 18px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -238,25 +310,31 @@
         .info-details p { font-size: 12px; color: var(--subtext-color); margin-top: 3px; }
 
         .btn-order {
-            padding: 14px 20px;
+            padding: 14px 22px;
             font-size: 14px;
             font-weight: 700;
             color: #fff;
-            background: linear-gradient(135deg, var(--accent-color), #4c1d95);
+            background: linear-gradient(135deg, var(--accent-color), #3b0764);
             border: none;
             border-radius: 14px;
             cursor: pointer;
             box-shadow: 0 4px 15px var(--accent-glow);
             outline: none;
-            transition: transform 0.1s ease;
+            transition: all 0.2s ease;
         }
 
-        .btn-order:active {
-            transform: scale(0.96);
-        }
+        .btn-order:active { transform: scale(0.95); }
     </style>
 </head>
-<body>
+<body class="theme-neon">
+
+    <!-- Тест-панель стилей -->
+    <div class="theme-switcher-bar">
+        <button class="theme-btn active" onclick="setTheme('neon', this)">1. Neon</button>
+        <button class="theme-btn" onclick="setTheme('cyber', this)">2. Cyber</button>
+        <button class="theme-btn" onclick="setTheme('clean', this)">3. Clean</button>
+        <button class="theme-btn" onclick="setTheme('bigfocus', this)">4. Big Focus</button>
+    </div>
 
     <div class="ambient-light" id="ambientLight"></div>
 
@@ -288,53 +366,40 @@
         const tg = window.Telegram ? window.Telegram.WebApp : null;
         if (tg) { tg.expand(); tg.ready(); }
 
-        // Резервные данные из базы на случай, если catalog.json недоступен
         let catalog = [
             {
                 "id": "m1",
                 "name": "soPRO-20000",
                 "puffs": "20 000 затяжек",
-                "price": "8 500 ₸",
+                "price": "15 000 ₸",
                 "image": "sopro20000.png",
                 "flavors": [
-                    { "id": "f101", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.35)" },
-                    { "id": "f102", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.35)" },
-                    { "id": "f103", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.35)" },
-                    { "id": "f104", "name": "Киви Маракуйя Гуава с ЧЗ", "color": "#84cc16", "bgGlow": "rgba(132, 204, 22, 0.35)" },
-                    { "id": "f105", "name": "Клубника Арбуз с ЧЗ", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.35)" }
+                    { "id": "f101", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.4)" },
+                    { "id": "f102", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.4)" },
+                    { "id": "f103", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.4)" }
                 ]
             },
             {
                 "id": "m2",
                 "name": "PA-10000",
                 "puffs": "10 000 затяжек",
-                "price": "6 500 ₸",
+                "price": "12 000 ₸",
                 "image": "pa10000.png",
                 "flavors": [
-                    { "id": "f201", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.35)" },
-                    { "id": "f202", "name": "Клубника Банан с ЧЗ", "color": "#f59e0b", "bgGlow": "rgba(245, 158, 11, 0.35)" },
-                    { "id": "f203", "name": "Манго Персик с ЧЗ", "color": "#f97316", "bgGlow": "rgba(249, 115, 22, 0.35)" },
-                    { "id": "f204", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.35)" },
-                    { "id": "f205", "name": "Клубника Киви с ЧЗ", "color": "#ec4899", "bgGlow": "rgba(236, 72, 153, 0.35)" },
-                    { "id": "f206", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.35)" },
-                    { "id": "f207", "name": "Киви Маракуйя Гуава с ЧЗ", "color": "#84cc16", "bgGlow": "rgba(132, 204, 22, 0.35)" },
-                    { "id": "f208", "name": "Вишня с ЧЗ", "color": "#881337", "bgGlow": "rgba(136, 19, 55, 0.35)" },
-                    { "id": "f209", "name": "Ягодный микс с ЧЗ", "color": "#7c3aed", "bgGlow": "rgba(124, 58, 237, 0.35)" },
-                    { "id": "f210", "name": "Вишневая Шипучка с ЧЗ", "color": "#e11d48", "bgGlow": "rgba(225, 29, 72, 0.35)" }
+                    { "id": "f201", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.4)" },
+                    { "id": "f202", "name": "Клубника Банан с ЧЗ", "color": "#f59e0b", "bgGlow": "rgba(245, 158, 11, 0.4)" },
+                    { "id": "f203", "name": "Манго Персик с ЧЗ", "color": "#f97316", "bgGlow": "rgba(249, 115, 22, 0.4)" }
                 ]
             },
             {
                 "id": "m3",
                 "name": "Slim-8000",
                 "puffs": "8 000 затяжек",
-                "price": "5 500 ₸",
+                "price": "8 500 ₸",
                 "image": "slim8000.png",
                 "flavors": [
-                    { "id": "f301", "name": "Клубника Арбуз", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.35)" },
-                    { "id": "f302", "name": "Черника Малина Персик", "color": "#6366f1", "bgGlow": "rgba(99, 102, 241, 0.35)" },
-                    { "id": "f303", "name": "Клубника Киви", "color": "#ec4899", "bgGlow": "rgba(236, 72, 153, 0.35)" },
-                    { "id": "f304", "name": "Ягодный Микс", "color": "#8b5cf6", "bgGlow": "rgba(139, 92, 246, 0.35)" },
-                    { "id": "f305", "name": "Ананас со льдом", "color": "#eab308", "bgGlow": "rgba(234, 179, 8, 0.35)" }
+                    { "id": "f301", "name": "Клубника Арбуз", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.4)" },
+                    { "id": "f302", "name": "Ананас со льдом", "color": "#eab308", "bgGlow": "rgba(234, 179, 8, 0.4)" }
                 ]
             }
         ];
@@ -352,21 +417,25 @@
         const drum = document.getElementById('wheelDrum');
         const container = document.getElementById('wheelContainer');
 
-        // Подгрузка внешнего файла catalog.json
         fetch('catalog.json')
             .then(res => res.json())
-            .then(data => {
-                if (data && data.length) {
-                    catalog = data;
-                    renderDrum();
-                }
-            })
+            .then(data => { if (data && data.length) { catalog = data; renderDrum(); } })
             .catch(() => renderDrum());
 
+        function setTheme(themeName, btnEl) {
+            document.body.className = `theme-${themeName}`;
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+            renderDrum();
+        }
+
         function triggerHaptic() {
-            if (tg && tg.HapticFeedback) {
-                tg.HapticFeedback.selectionChanged();
-            }
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+        }
+
+        function getWheelRadius() {
+            const style = getComputedStyle(document.body);
+            return parseInt(style.getPropertyValue('--wheel-radius')) || 110;
         }
 
         function renderDrum() {
@@ -375,7 +444,7 @@
             const itemCount = items.length;
             
             const angleStep = 360 / Math.max(itemCount, 8); 
-            const radius = 95; 
+            const radius = getWheelRadius();
 
             items.forEach((item, index) => {
                 const el = document.createElement('div');
@@ -397,7 +466,7 @@
                 } else {
                     el.innerHTML = `
                         <div class="wheel-item-icon" style="background:${item.color}; color:${item.color};"></div>
-                        <div class="wheel-item-info">
+                        <div class="wheel-item-info" style="margin-left: 12px;">
                             <div class="wheel-item-title">${item.name}</div>
                             <div class="wheel-item-sub">В наличии</div>
                         </div>
@@ -441,15 +510,8 @@
             document.getElementById('summaryTitle').innerText = model.name;
             document.getElementById('summarySub').innerText = `Вкус: ${flavor.name} • ${model.price}`;
 
-            document.documentElement.style.setProperty('--accent-color', flavor.color || '#8b5cf6');
-            document.documentElement.style.setProperty('--accent-glow', flavor.bgGlow || 'rgba(139, 92, 246, 0.35)');
-
             const btn = document.getElementById('actionBtn');
-            if (currentTab === 'model') {
-                btn.innerText = 'Выбрать вкус →';
-            } else {
-                btn.innerText = 'Оплатить';
-            }
+            btn.innerText = currentTab === 'model' ? 'Выбрать вкус →' : 'Оплатить';
         }
 
         function switchTab(tab) {
@@ -462,10 +524,7 @@
         }
 
         function handleAction() {
-            if (tg && tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
             if (currentTab === 'model') {
                 switchTab('flavor');
             } else {
@@ -473,7 +532,6 @@
             }
         }
 
-        // --- Touch & Mouse Events ---
         function startDrag(clientY) {
             isDragging = true;
             startY = clientY;
@@ -495,12 +553,10 @@
             snapToItem();
         }
 
-        // Touch
         container.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientY), { passive: true });
         container.addEventListener('touchmove', (e) => moveDrag(e.touches[0].clientY), { passive: true });
         container.addEventListener('touchend', stopDrag);
 
-        // Mouse (ПК версия)
         container.addEventListener('mousedown', (e) => startDrag(e.clientY));
         window.addEventListener('mousemove', (e) => moveDrag(e.clientY));
         window.addEventListener('mouseup', stopDrag);
@@ -528,7 +584,7 @@
             if (tg) {
                 tg.sendData(JSON.stringify(orderData));
             } else {
-                alert(`Заказ оформлен: ${model.name} (${flavor.name}) — ${model.price}`);
+                alert(`Заказ: ${model.name} (${flavor.name}) — ${model.price}`);
             }
         }
 
