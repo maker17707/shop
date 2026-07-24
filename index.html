@@ -49,7 +49,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, sans-serif;
-            overflow: hidden;
+            overflow-x: hidden;
             transition: background-color 0.4s ease;
         }
 
@@ -94,6 +94,7 @@
             transition: all 0.4s ease;
         }
 
+        /* 1. ЭКРАН ВЫБОРА (БАРАБАН) */
         .picker-section {
             position: relative;
             z-index: 10;
@@ -273,6 +274,124 @@
         }
 
         .btn-order:active { transform: scale(0.95); }
+
+        /* 2. ЭКРАН ПОДТВЕРЖДЕНИЯ (CHECKOUT) */
+        .checkout-section {
+            display: none;
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .preview-card {
+            width: 100%;
+            max-width: 320px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-img {
+            height: 140px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
+            margin-bottom: 12px;
+        }
+
+        .preview-flavor-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .flavor-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .preview-price {
+            font-size: 22px;
+            font-weight: 800;
+            color: #34d399;
+            margin-bottom: 14px;
+        }
+
+        .preview-description {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--subtext-color);
+            padding: 10px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-description strong {
+            color: #fff;
+        }
+
+        .checkout-actions {
+            width: 100%;
+            max-width: 320px;
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn-back {
+            flex: 1;
+            padding: 14px 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--subtext-color);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-confirm {
+            flex: 1.5;
+            padding: 14px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, #10b981, #064e3b);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:active, .btn-confirm:active {
+            transform: scale(0.96);
+        }
     </style>
 </head>
 <body class="mode-model">
@@ -280,10 +399,11 @@
     <div class="ambient-light" id="ambientLight"></div>
 
     <header>
-        <h1>Каталог Товаров</h1>
+        <h1 id="pageTitle">Каталог Товаров</h1>
     </header>
 
-    <div class="picker-section">
+    <!-- 1. СЕКЦИЯ ВЫБОРА С БАРАБАНОМ -->
+    <div class="picker-section" id="pickerSection">
         <div class="tabs">
             <div class="tab active" id="tabModel" onclick="switchTab('model')">1. Устройство</div>
             <div class="tab" id="tabFlavor" onclick="switchTab('flavor')">2. Вкус</div>
@@ -295,12 +415,36 @@
         </div>
     </div>
 
-    <div class="info-card">
+    <!-- КАРТОЧКА СНИЗУ ДЛЯ БАРАБАНА -->
+    <div class="info-card" id="infoCard">
         <div class="info-details">
             <h3 id="summaryTitle">Загрузка...</h3>
             <p id="summarySub">Выберите параметры</p>
         </div>
         <button class="btn-order" id="actionBtn" onclick="handleAction()">Далее</button>
+    </div>
+
+    <!-- 2. СЕКЦИЯ ПОДТВЕРЖДЕНИЯ ЗАКАЗА -->
+    <div class="checkout-section" id="checkoutSection">
+        <div class="preview-card">
+            <img id="checkoutImg" class="preview-img" src="" alt="Device">
+            
+            <div class="preview-flavor-badge">
+                <span class="flavor-dot" id="checkoutFlavorDot"></span>
+                <span id="checkoutFlavorName">Вкус</span>
+            </div>
+
+            <div class="preview-price" id="checkoutPrice">0 ₸</div>
+
+            <div class="preview-description" id="checkoutText">
+                Загрузка информации...
+            </div>
+        </div>
+
+        <div class="checkout-actions">
+            <button class="btn-back" onclick="goBackToPicker()">← Вернуться</button>
+            <button class="btn-confirm" onclick="confirmOrder()">Подтвердить</button>
+        </div>
     </div>
 
     <script>
@@ -460,7 +604,7 @@
             }
 
             const btn = document.getElementById('actionBtn');
-            btn.innerText = currentTab === 'model' ? 'Выбрать вкус →' : 'Оплатить';
+            btn.innerText = currentTab === 'model' ? 'Выбрать вкус →' : 'Сделать заказ';
         }
 
         function switchTab(tab) {
@@ -479,8 +623,52 @@
             if (currentTab === 'model') {
                 switchTab('flavor');
             } else {
-                submitOrder();
+                openCheckoutPage();
             }
+        }
+
+        /* ОТКРЫТИЕ СТРАНИЦЫ ПОДТВЕРЖДЕНИЯ */
+        function openCheckoutPage() {
+            const model = catalog[selectedModelIndex];
+            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
+
+            // Заполняем данные на странице подтверждения
+            document.getElementById('checkoutImg').src = model.image || '';
+            document.getElementById('checkoutFlavorDot').style.backgroundColor = flavor.color || '#10b981';
+            document.getElementById('checkoutFlavorDot').style.color = flavor.color || '#10b981';
+            document.getElementById('checkoutFlavorName').innerText = flavor.name;
+            document.getElementById('checkoutPrice').innerText = model.price;
+
+            document.getElementById('checkoutText').innerHTML = 
+                `Вы выбрали устройство <strong>${model.name}</strong> со вкусом <strong>${flavor.name}</strong> по цене <strong>${model.price}</strong>.`;
+
+            document.getElementById('pageTitle').innerText = 'Подтверждение заказа';
+
+            // Переключаем секции
+            document.getElementById('pickerSection').style.display = 'none';
+            document.getElementById('infoCard').style.display = 'none';
+            document.getElementById('checkoutSection').style.display = 'flex';
+        }
+
+        /* ВОЗВРАТ К ВЫБОРУ УСТРОЙСТВА */
+        function goBackToPicker() {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+
+            document.getElementById('pageTitle').innerText = 'Каталог Товаров';
+            document.getElementById('checkoutSection').style.display = 'none';
+            
+            document.getElementById('pickerSection').style.display = 'flex';
+            document.getElementById('infoCard').style.display = 'flex';
+
+            switchTab('model');
+        }
+
+        /* ПОДТВЕРЖДЕНИЕ ЗАКАЗА (ПЕРЕХОД К СЛЕДУЮЩЕМУ ШАГУ) */
+        function confirmOrder() {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+            
+            // Сюда мы добавим следующий шаг, о котором вы расскажете!
+            alert('Переход к следующему шагу...');
         }
 
         function startDrag(clientY) {
@@ -498,15 +686,13 @@
             const angleStep = getAngleStep(items.length);
             const maxAngle = (items.length - 1) * angleStep;
 
-            // Расчет движения барабана
             let nextAngle = currentAngle + deltaY * 0.35;
 
-            // Эффект сопротивления при выходе за границы (от 0 до maxAngle)
             if (nextAngle < 0) {
-                nextAngle = currentAngle + deltaY * 0.1; // Пониженная чувствительность за верхом
+                nextAngle = currentAngle + deltaY * 0.1;
                 if (nextAngle < -angleStep * 0.4) nextAngle = -angleStep * 0.4;
             } else if (nextAngle > maxAngle) {
-                nextAngle = currentAngle + deltaY * 0.1; // Пониженная чувствительность за низом
+                nextAngle = currentAngle + deltaY * 0.1;
                 if (nextAngle > maxAngle + angleStep * 0.4) nextAngle = maxAngle + angleStep * 0.4;
             }
 
@@ -539,25 +725,6 @@
             currentAngle = targetIndex * angleStep;
             drum.style.transition = 'transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1)';
             updateDrumTransform();
-        }
-
-        function submitOrder() {
-            const model = catalog[selectedModelIndex];
-            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
-
-            const orderData = {
-                model_id: model.id,
-                model_name: model.name,
-                flavor_id: flavor.id,
-                flavor_name: flavor.name,
-                price: model.price
-            };
-
-            if (tg) {
-                tg.sendData(JSON.stringify(orderData));
-            } else {
-                alert(`Заказ: ${model.name} (${flavor.name}) — ${model.price}`);
-            }
         }
 
         renderDrum();
