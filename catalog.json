@@ -3,8 +3,8 @@
     "id": "m1",
     "name": "soPRO-20000",
     "puffs": "20 000 затяжек",
-    "price": "8 500 ₸",
-    "image": "https://site.com/images/sopro20000.png",
+    "price": "15 000 ₸",
+    "image": "sopro20000.png",
     "flavors": [
       {
         "id": "f101",
@@ -42,8 +42,8 @@
     "id": "m2",
     "name": "PA-10000",
     "puffs": "10 000 затяжек",
-    "price": "6 500 ₸",
-    "image": "https://site.com/images/pa10000.png",
+    "price": "12 000 ₸",
+    "image": "pa10000.png",
     "flavors": [
       {
         "id": "f201",
@@ -111,8 +111,8 @@
     "id": "m3",
     "name": "Slim-8000",
     "puffs": "8 000 затяжек",
-    "price": "5 500 ₸",
-    "image": "https://site.com/images/slim8000.png",
+    "price": "10 000 ₸",
+    "image": "slim8000.png",
     "flavors": [
       {
         "id": "f301",
