@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vape Wheel Catalog</title>
+    <title>Vape Store Catalog</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -23,13 +23,12 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* ИСПРАВЛЕНО: Включен вертикальный скролл страницы */
         html, body {
             min-height: 100vh;
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, sans-serif;
-            overflow-y: auto !important; 
+            overflow-y: auto !important;
             -webkit-overflow-scrolling: touch;
         }
 
@@ -38,13 +37,13 @@
             flex-direction: column;
             justify-content: space-between;
             position: relative;
-            padding-bottom: 20px;
+            padding-bottom: 24px;
         }
 
-        /* Ambient Backlight Glow */
+        /* Ambient Glow Background */
         .ambient-light {
             position: absolute;
-            top: 25%;
+            top: 20%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 280px;
@@ -60,12 +59,12 @@
         header {
             position: relative;
             z-index: 10;
-            padding: 16px 16px 8px;
+            padding: 20px 16px 10px;
             text-align: center;
         }
 
         header h1 {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 800;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -74,7 +73,6 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* Tabs Switcher */
         .picker-section {
             position: relative;
             z-index: 10;
@@ -83,24 +81,25 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin-bottom: 20px;
+            margin: 10px 0 20px;
         }
 
+        /* Tabs Switcher */
         .tabs {
             display: flex;
             background: rgba(255, 255, 255, 0.06);
             backdrop-filter: blur(12px);
             border-radius: 16px;
-            padding: 3px;
-            margin-bottom: 10px;
+            padding: 4px;
+            margin-bottom: 16px;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .tab {
-            padding: 6px 16px;
-            font-size: 12px;
+            padding: 8px 18px;
+            font-size: 13px;
             font-weight: 600;
-            border-radius: 13px;
+            border-radius: 12px;
             color: var(--subtext-color);
             cursor: pointer;
             transition: all 0.25s ease;
@@ -112,11 +111,11 @@
             box-shadow: 0 3px 12px var(--accent-glow);
         }
 
-        /* Wheel Wrapper & Drum */
+        /* 3D Wheel Drum */
         .wheel-wrapper {
             position: relative;
             width: 100%;
-            height: 220px;
+            height: 240px;
             perspective: 800px;
             overflow: hidden;
             display: flex;
@@ -127,17 +126,17 @@
         .wheel-selection-overlay {
             position: absolute;
             top: 50%;
-            left: 8%;
-            right: 8%;
+            left: 6%;
+            right: 6%;
             transform: translateY(-50%);
-            height: 52px;
+            height: 54px;
             border-top: 1.5px solid var(--accent-color);
             border-bottom: 1.5px solid var(--accent-color);
             background: rgba(255, 255, 255, 0.02);
             pointer-events: none;
             z-index: 5;
-            box-shadow: 0 0 12px var(--accent-glow);
-            border-radius: 10px;
+            box-shadow: 0 0 15px var(--accent-glow);
+            border-radius: 12px;
         }
 
         .wheel-drum {
@@ -149,31 +148,30 @@
             touch-action: none;
         }
 
-        /* Wheel Item Style */
         .wheel-item {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 250px;
-            height: 48px;
-            margin-top: -24px;
-            margin-left: -125px;
+            width: 270px;
+            height: 50px;
+            margin-top: -25px;
+            margin-left: -135px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 14px;
+            padding: 0 16px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 12px;
+            border-radius: 14px;
             backdrop-filter: blur(6px);
             backface-visibility: hidden;
         }
 
-        .wheel-item img {
-            width: 36px;
-            height: 36px;
-            object-fit: contain;
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.6));
+        .wheel-item-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            box-shadow: 0 0 8px currentColor;
         }
 
         .wheel-item-info {
@@ -200,13 +198,13 @@
             color: #34d399;
         }
 
-        /* Footer Action */
+        /* Order Info Card */
         .info-card {
-            margin: 0 16px 16px;
-            padding: 14px 16px;
+            margin: 0 16px;
+            padding: 16px;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
+            border-radius: 18px;
             backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-between;
@@ -215,19 +213,24 @@
         }
 
         .info-details h3 { font-size: 15px; font-weight: 700; }
-        .info-details p { font-size: 12px; color: var(--subtext-color); margin-top: 2px; }
+        .info-details p { font-size: 12px; color: var(--subtext-color); margin-top: 3px; }
 
         .btn-order {
-            padding: 12px 22px;
+            padding: 14px 20px;
             font-size: 14px;
             font-weight: 700;
             color: #fff;
             background: linear-gradient(135deg, var(--accent-color), #4c1d95);
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             cursor: pointer;
             box-shadow: 0 4px 15px var(--accent-glow);
             outline: none;
+            transition: transform 0.1s ease;
+        }
+
+        .btn-order:active {
+            transform: scale(0.96);
         }
     </style>
 </head>
@@ -236,7 +239,7 @@
     <div class="ambient-light" id="ambientLight"></div>
 
     <header>
-        <h1>CyberVape Store</h1>
+        <h1>Каталог Товаров</h1>
     </header>
 
     <div class="picker-section">
@@ -253,38 +256,60 @@
 
     <div class="info-card">
         <div class="info-details">
-            <h3 id="summaryTitle">ElfBar 10000</h3>
-            <p id="summarySub">Выберите вкус</p>
+            <h3 id="summaryTitle">Загрузка...</h3>
+            <p id="summarySub">Выберите параметры</p>
         </div>
-        <button class="btn-order" onclick="submitOrder()">В корзину</button>
+        <button class="btn-order" id="actionBtn" onclick="handleAction()">Далее</button>
     </div>
 
     <script>
         const tg = window.Telegram ? window.Telegram.WebApp : null;
         if (tg) { tg.expand(); tg.ready(); }
 
-        const catalog = [
+        // Резервные данные из базы на случай, если catalog.json недоступен
+        let catalog = [
             {
-                id: "m1",
-                name: "ElfBar BC10000",
-                puffs: "10 000 тяг",
-                price: "7 500 ₸",
-                image: "https://pngimg.com/uploads/vape/vape_PNG37.png",
-                flavors: [
-                    { id: "f11", name: "Черника Лёд", color: "#3b82f6", bgGlow: "rgba(59, 130, 246, 0.35)", icon: "https://png.pngtree.com/png-clipart/20230114/ourmid/pngtree-blueberry-fruit-transparent-background-png-image_6561565.png" },
-                    { id: "f12", name: "Кислая Малина", color: "#ef4444", bgGlow: "rgba(239, 68, 68, 0.35)", icon: "https://png.pngtree.com/png-clipart/20230114/ourmid/pngtree-raspberry-fruit-png-image_6561566.png" },
-                    { id: "f13", name: "Арбуз Мята", color: "#10b981", bgGlow: "rgba(16, 185, 129, 0.35)", icon: "https://png.pngtree.com/png-clipart/20230114/ourmid/pngtree-watermelon-png-image_6561567.png" }
+                "id": "m1",
+                "name": "soPRO-20000",
+                "puffs": "20 000 затяжек",
+                "price": "8 500 ₸",
+                "flavors": [
+                    { "id": "f101", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.35)" },
+                    { "id": "f102", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.35)" },
+                    { "id": "f103", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.35)" },
+                    { "id": "f104", "name": "Киви Маракуйя Гуава с ЧЗ", "color": "#84cc16", "bgGlow": "rgba(132, 204, 22, 0.35)" },
+                    { "id": "f105", "name": "Клубника Арбуз с ЧЗ", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.35)" }
                 ]
             },
             {
-                id: "m2",
-                name: "Lost Mary 16000",
-                puffs: "16 000 тяг",
-                price: "9 000 ₸",
-                image: "https://pngimg.com/uploads/vape/vape_PNG37.png",
-                flavors: [
-                    { id: "f21", name: "Двойное Яблоко", color: "#22c55e", bgGlow: "rgba(34, 197, 94, 0.35)", icon: "" },
-                    { id: "f22", name: "Клубника Банан", color: "#f59e0b", bgGlow: "rgba(245, 158, 11, 0.35)", icon: "" }
+                "id": "m2",
+                "name": "PA-10000",
+                "puffs": "10 000 затяжек",
+                "price": "6 500 ₸",
+                "flavors": [
+                    { "id": "f201", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.35)" },
+                    { "id": "f202", "name": "Клубника Банан с ЧЗ", "color": "#f59e0b", "bgGlow": "rgba(245, 158, 11, 0.35)" },
+                    { "id": "f203", "name": "Манго Персик с ЧЗ", "color": "#f97316", "bgGlow": "rgba(249, 115, 22, 0.35)" },
+                    { "id": "f204", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.35)" },
+                    { "id": "f205", "name": "Клубника Киви с ЧЗ", "color": "#ec4899", "bgGlow": "rgba(236, 72, 153, 0.35)" },
+                    { "id": "f206", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.35)" },
+                    { "id": "f207", "name": "Киви Маракуйя Гуава с ЧЗ", "color": "#84cc16", "bgGlow": "rgba(132, 204, 22, 0.35)" },
+                    { "id": "f208", "name": "Вишня с ЧЗ", "color": "#881337", "bgGlow": "rgba(136, 19, 55, 0.35)" },
+                    { "id": "f209", "name": "Ягодный микс с ЧЗ", "color": "#7c3aed", "bgGlow": "rgba(124, 58, 237, 0.35)" },
+                    { "id": "f210", "name": "Вишневая Шипучка с ЧЗ", "color": "#e11d48", "bgGlow": "rgba(225, 29, 72, 0.35)" }
+                ]
+            },
+            {
+                "id": "m3",
+                "name": "Slim-8000",
+                "puffs": "8 000 затяжек",
+                "price": "5 500 ₸",
+                "flavors": [
+                    { "id": "f301", "name": "Клубника Арбуз", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.35)" },
+                    { "id": "f302", "name": "Черника Малина Персик", "color": "#6366f1", "bgGlow": "rgba(99, 102, 241, 0.35)" },
+                    { "id": "f303", "name": "Клубника Киви", "color": "#ec4899", "bgGlow": "rgba(236, 72, 153, 0.35)" },
+                    { "id": "f304", "name": "Ягодный Микс", "color": "#8b5cf6", "bgGlow": "rgba(139, 92, 246, 0.35)" },
+                    { "id": "f305", "name": "Ананас со льдом", "color": "#eab308", "bgGlow": "rgba(234, 179, 8, 0.35)" }
                 ]
             }
         ];
@@ -302,13 +327,30 @@
         const drum = document.getElementById('wheelDrum');
         const container = document.getElementById('wheelContainer');
 
+        // Подгрузка внешнего файла catalog.json
+        fetch('catalog.json')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.length) {
+                    catalog = data;
+                    renderDrum();
+                }
+            })
+            .catch(() => renderDrum());
+
+        function triggerHaptic() {
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.selectionChanged();
+            }
+        }
+
         function renderDrum() {
             drum.innerHTML = '';
             const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
             const itemCount = items.length;
             
             const angleStep = 360 / Math.max(itemCount, 8); 
-            const radius = 85; 
+            const radius = 95; 
 
             items.forEach((item, index) => {
                 const el = document.createElement('div');
@@ -319,7 +361,6 @@
 
                 if (currentTab === 'model') {
                     el.innerHTML = `
-                        <img src="${item.image}" alt="vape">
                         <div class="wheel-item-info">
                             <div class="wheel-item-title">${item.name}</div>
                             <div class="wheel-item-sub">${item.puffs}</div>
@@ -327,9 +368,8 @@
                         <div class="wheel-item-price">${item.price}</div>
                     `;
                 } else {
-                    const iconHtml = item.icon ? `<img src="${item.icon}" alt="flavor">` : `<div style="width:16px;height:16px;border-radius:50%;background:${item.color}"></div>`;
                     el.innerHTML = `
-                        ${iconHtml}
+                        <div class="wheel-item-icon" style="background:${item.color}; color:${item.color};"></div>
                         <div class="wheel-item-info">
                             <div class="wheel-item-title">${item.name}</div>
                             <div class="wheel-item-sub">В наличии</div>
@@ -355,9 +395,7 @@
 
             if (activeIdx !== lastSelectedIndex) {
                 lastSelectedIndex = activeIdx;
-                if (tg && tg.HapticFeedback) {
-                    tg.HapticFeedback.selectionChanged();
-                }
+                triggerHaptic();
 
                 if (currentTab === 'model') {
                     selectedModelIndex = activeIdx;
@@ -376,11 +414,19 @@
             document.getElementById('summaryTitle').innerText = model.name;
             document.getElementById('summarySub').innerText = `Вкус: ${flavor.name} • ${model.price}`;
 
-            document.documentElement.style.setProperty('--accent-color', flavor.color);
-            document.documentElement.style.setProperty('--accent-glow', flavor.bgGlow);
+            document.documentElement.style.setProperty('--accent-color', flavor.color || '#8b5cf6');
+            document.documentElement.style.setProperty('--accent-glow', flavor.bgGlow || 'rgba(139, 92, 246, 0.35)');
+
+            const btn = document.getElementById('actionBtn');
+            if (currentTab === 'model') {
+                btn.innerText = 'Выбрать вкус →';
+            } else {
+                btn.innerText = 'Оплатить';
+            }
         }
 
         function switchTab(tab) {
+            triggerHaptic();
             currentTab = tab;
             document.getElementById('tabModel').classList.toggle('active', tab === 'model');
             document.getElementById('tabFlavor').classList.toggle('active', tab === 'flavor');
@@ -388,6 +434,19 @@
             renderDrum();
         }
 
+        function handleAction() {
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+
+            if (currentTab === 'model') {
+                switchTab('flavor');
+            } else {
+                submitOrder();
+            }
+        }
+
+        // Touch events
         container.addEventListener('touchstart', (e) => {
             isDragging = true;
             startY = e.touches[0].clientY;
@@ -421,17 +480,18 @@
             const model = catalog[selectedModelIndex];
             const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
 
+            const orderData = {
+                model_id: model.id,
+                model_name: model.name,
+                flavor_id: flavor.id,
+                flavor_name: flavor.name,
+                price: model.price
+            };
+
             if (tg) {
-                tg.HapticFeedback.impactOccurred('medium');
-                tg.sendData(JSON.stringify({
-                    model_id: model.id,
-                    model_name: model.name,
-                    flavor_id: flavor.id,
-                    flavor_name: flavor.name,
-                    price: model.price
-                }));
+                tg.sendData(JSON.stringify(orderData));
             } else {
-                alert(`В корзину: ${model.name} (${flavor.name})`);
+                alert(`Заказ оформлен: ${model.name} (${flavor.name}) — ${model.price}`);
             }
         }
 
