@@ -3,55 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vape Store Catalog - Theme Tester</title>
+    <title>Vape Store Catalog</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: #0b0c10;
-            --accent-color: #8b5cf6;
-            --accent-glow: rgba(139, 92, 246, 0.35);
+            --bg-color: #0a0a0c;
+            --accent-color: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.4);
             --text-color: #f3f4f6;
             --subtext-color: #9ca3af;
-            --img-size: 44px;
-            --wheel-radius: 110px;
-            --item-height: 56px;
+            --img-size: 64px;
+            --wheel-radius: 140px;
+            --item-height: 68px;
         }
 
-        /* --- СТИЛИ ТЕМ (Theme Switcher Preset) --- */
-        body.theme-neon {
-            --bg-color: #0d0e15;
-            --accent-color: #ff3366;
-            --accent-glow: rgba(255, 51, 102, 0.45);
-            --img-size: 52px;
-            --wheel-radius: 125px;
-            --item-height: 58px;
-        }
-
-        body.theme-cyber {
-            --bg-color: #050b14;
-            --accent-color: #00f2fe;
-            --accent-glow: rgba(0, 242, 254, 0.4);
-            --img-size: 42px;
-            --wheel-radius: 100px;
-            --item-height: 50px;
-        }
-
-        body.theme-clean {
-            --bg-color: #121212;
-            --accent-color: #a855f7;
-            --accent-glow: rgba(168, 85, 247, 0.3);
-            --img-size: 46px;
-            --wheel-radius: 135px;
-            --item-height: 54px;
-        }
-
-        body.theme-bigfocus {
+        body.mode-model {
             --bg-color: #0a0a0c;
             --accent-color: #10b981;
             --accent-glow: rgba(16, 185, 129, 0.4);
             --img-size: 64px;
             --wheel-radius: 140px;
             --item-height: 68px;
+        }
+
+        body.mode-flavor {
+            --bg-color: #050b14;
+            --accent-color: #00f2fe;
+            --accent-glow: rgba(0, 242, 254, 0.4);
+            --img-size: 42px;
+            --wheel-radius: 100px;
+            --item-height: 50px;
         }
 
         * {
@@ -77,42 +58,9 @@
             flex-direction: column;
             justify-content: space-between;
             position: relative;
-            padding-bottom: 20px;
+            padding-bottom: 24px;
         }
 
-        /* Панель переключателя тем */
-        .theme-switcher-bar {
-            position: relative;
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            padding: 10px 12px;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .theme-btn {
-            padding: 6px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            background: rgba(255, 255, 255, 0.05);
-            color: #ccc;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .theme-btn.active {
-            background: var(--accent-color);
-            color: #fff;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
-
-        /* Ambient Light */
         .ambient-light {
             position: absolute;
             top: 25%;
@@ -131,18 +79,19 @@
         header {
             position: relative;
             z-index: 10;
-            padding: 12px 16px 6px;
+            padding: 20px 16px 10px;
             text-align: center;
         }
 
         header h1 {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 800;
             letter-spacing: 1px;
             text-transform: uppercase;
             background: linear-gradient(135deg, #fff 30%, var(--accent-color));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            transition: all 0.4s ease;
         }
 
         .picker-section {
@@ -155,7 +104,6 @@
             align-items: center;
         }
 
-        /* Tabs Switcher */
         .tabs {
             display: flex;
             background: rgba(255, 255, 255, 0.06);
@@ -182,11 +130,10 @@
             box-shadow: 0 3px 12px var(--accent-glow);
         }
 
-        /* 3D Wheel Drum */
         .wheel-wrapper {
             position: relative;
             width: 100%;
-            height: 260px;
+            height: 280px;
             perspective: 900px;
             overflow: hidden;
             display: flex;
@@ -243,14 +190,13 @@
             transition: height 0.3s ease, margin 0.3s ease, border-color 0.3s ease;
         }
 
-        /* Картинка девайса */
         .wheel-item-img {
             height: var(--img-size);
             width: auto;
-            max-width: 60px;
+            max-width: 65px;
             object-fit: contain;
             margin-right: 12px;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7));
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.75));
             pointer-events: none;
             transition: height 0.3s ease;
         }
@@ -292,7 +238,6 @@
             margin-left: 10px;
         }
 
-        /* Order Info Card */
         .info-card {
             margin: 0 16px;
             padding: 16px;
@@ -314,7 +259,7 @@
             font-size: 14px;
             font-weight: 700;
             color: #fff;
-            background: linear-gradient(135deg, var(--accent-color), #3b0764);
+            background: linear-gradient(135deg, var(--accent-color), #064e3b);
             border: none;
             border-radius: 14px;
             cursor: pointer;
@@ -323,18 +268,14 @@
             transition: all 0.2s ease;
         }
 
+        body.mode-flavor .btn-order {
+            background: linear-gradient(135deg, var(--accent-color), #0e7490);
+        }
+
         .btn-order:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="theme-neon">
-
-    <!-- Тест-панель стилей -->
-    <div class="theme-switcher-bar">
-        <button class="theme-btn active" onclick="setTheme('neon', this)">1. Neon</button>
-        <button class="theme-btn" onclick="setTheme('cyber', this)">2. Cyber</button>
-        <button class="theme-btn" onclick="setTheme('clean', this)">3. Clean</button>
-        <button class="theme-btn" onclick="setTheme('bigfocus', this)">4. Big Focus</button>
-    </div>
+<body class="mode-model">
 
     <div class="ambient-light" id="ambientLight"></div>
 
@@ -376,7 +317,9 @@
                 "flavors": [
                     { "id": "f101", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.4)" },
                     { "id": "f102", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.4)" },
-                    { "id": "f103", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.4)" }
+                    { "id": "f103", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.4)" },
+                    { "id": "f104", "name": "Киви Маракуйя Гуава с ЧЗ", "color": "#84cc16", "bgGlow": "rgba(132, 204, 22, 0.4)" },
+                    { "id": "f105", "name": "Клубника Арбуз с ЧЗ", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.4)" }
                 ]
             },
             {
@@ -388,7 +331,10 @@
                 "flavors": [
                     { "id": "f201", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.4)" },
                     { "id": "f202", "name": "Клубника Банан с ЧЗ", "color": "#f59e0b", "bgGlow": "rgba(245, 158, 11, 0.4)" },
-                    { "id": "f203", "name": "Манго Персик с ЧЗ", "color": "#f97316", "bgGlow": "rgba(249, 115, 22, 0.4)" }
+                    { "id": "f203", "name": "Манго Персик с ЧЗ", "color": "#f97316", "bgGlow": "rgba(249, 115, 22, 0.4)" },
+                    { "id": "f204", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.4)" },
+                    { "id": "f205", "name": "Клубника Киви с ЧЗ", "color": "#ec4899", "bgGlow": "rgba(236, 72, 153, 0.4)" },
+                    { "id": "f206", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.4)" }
                 ]
             },
             {
@@ -399,7 +345,8 @@
                 "image": "slim8000.png",
                 "flavors": [
                     { "id": "f301", "name": "Клубника Арбуз", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.4)" },
-                    { "id": "f302", "name": "Ананас со льдом", "color": "#eab308", "bgGlow": "rgba(234, 179, 8, 0.4)" }
+                    { "id": "f302", "name": "Черника Малина Персик", "color": "#6366f1", "bgGlow": "rgba(99, 102, 241, 0.4)" },
+                    { "id": "f303", "name": "Ананас со льдом", "color": "#eab308", "bgGlow": "rgba(234, 179, 8, 0.4)" }
                 ]
             }
         ];
@@ -422,20 +369,17 @@
             .then(data => { if (data && data.length) { catalog = data; renderDrum(); } })
             .catch(() => renderDrum());
 
-        function setTheme(themeName, btnEl) {
-            document.body.className = `theme-${themeName}`;
-            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-            btnEl.classList.add('active');
-            renderDrum();
-        }
-
         function triggerHaptic() {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
         }
 
         function getWheelRadius() {
             const style = getComputedStyle(document.body);
-            return parseInt(style.getPropertyValue('--wheel-radius')) || 110;
+            return parseInt(style.getPropertyValue('--wheel-radius')) || 120;
+        }
+
+        function getAngleStep(itemCount) {
+            return Math.max(30, 360 / Math.max(itemCount, 12));
         }
 
         function renderDrum() {
@@ -443,7 +387,7 @@
             const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
             const itemCount = items.length;
             
-            const angleStep = 360 / Math.max(itemCount, 8); 
+            const angleStep = getAngleStep(itemCount); 
             const radius = getWheelRadius();
 
             items.forEach((item, index) => {
@@ -484,10 +428,10 @@
             drum.style.transform = `rotateX(${currentAngle}deg)`;
             
             const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
-            const angleStep = 360 / Math.max(items.length, 8);
+            const angleStep = getAngleStep(items.length);
             
-            let normalizedAngle = (currentAngle % 360 + 360) % 360;
-            let activeIdx = Math.round(normalizedAngle / angleStep) % items.length;
+            let activeIdx = Math.round(currentAngle / angleStep);
+            activeIdx = Math.max(0, Math.min(activeIdx, items.length - 1));
 
             if (activeIdx !== lastSelectedIndex) {
                 lastSelectedIndex = activeIdx;
@@ -510,6 +454,11 @@
             document.getElementById('summaryTitle').innerText = model.name;
             document.getElementById('summarySub').innerText = `Вкус: ${flavor.name} • ${model.price}`;
 
+            if (currentTab === 'flavor' && flavor.color) {
+                document.documentElement.style.setProperty('--accent-color', flavor.color);
+                document.documentElement.style.setProperty('--accent-glow', flavor.bgGlow || 'rgba(0, 242, 254, 0.4)');
+            }
+
             const btn = document.getElementById('actionBtn');
             btn.innerText = currentTab === 'model' ? 'Выбрать вкус →' : 'Оплатить';
         }
@@ -517,6 +466,8 @@
         function switchTab(tab) {
             triggerHaptic();
             currentTab = tab;
+            document.body.className = tab === 'model' ? 'mode-model' : 'mode-flavor';
+
             document.getElementById('tabModel').classList.toggle('active', tab === 'model');
             document.getElementById('tabFlavor').classList.toggle('active', tab === 'flavor');
             lastSelectedIndex = -1;
@@ -542,7 +493,24 @@
             if (!isDragging) return;
             currentY = clientY;
             const deltaY = startY - currentY;
-            currentAngle += deltaY * 0.35;
+            
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            const angleStep = getAngleStep(items.length);
+            const maxAngle = (items.length - 1) * angleStep;
+
+            // Расчет движения барабана
+            let nextAngle = currentAngle + deltaY * 0.35;
+
+            // Эффект сопротивления при выходе за границы (от 0 до maxAngle)
+            if (nextAngle < 0) {
+                nextAngle = currentAngle + deltaY * 0.1; // Пониженная чувствительность за верхом
+                if (nextAngle < -angleStep * 0.4) nextAngle = -angleStep * 0.4;
+            } else if (nextAngle > maxAngle) {
+                nextAngle = currentAngle + deltaY * 0.1; // Пониженная чувствительность за низом
+                if (nextAngle > maxAngle + angleStep * 0.4) nextAngle = maxAngle + angleStep * 0.4;
+            }
+
+            currentAngle = nextAngle;
             startY = currentY;
             updateDrumTransform();
         }
@@ -563,8 +531,12 @@
 
         function snapToItem() {
             const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
-            const angleStep = 360 / Math.max(items.length, 8);
-            currentAngle = Math.round(currentAngle / angleStep) * angleStep;
+            const angleStep = getAngleStep(items.length);
+            
+            let targetIndex = Math.round(currentAngle / angleStep);
+            targetIndex = Math.max(0, Math.min(targetIndex, items.length - 1));
+
+            currentAngle = targetIndex * angleStep;
             drum.style.transition = 'transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1)';
             updateDrumTransform();
         }
