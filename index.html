@@ -239,7 +239,6 @@
             margin-left: 10px;
         }
 
-        /* КАРТОЧКА СНИЗУ */
         .info-card {
             margin: 0 16px;
             padding: 16px;
@@ -504,17 +503,17 @@
         /* АВТОКОМПЛИТ ДЛЯ АДРЕСА */
         .autocomplete-list {
             position: absolute;
-            top: 100%;
+            top: calc(100% - 35px);
             left: 0;
             right: 0;
             background: #121824;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            max-height: 140px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            max-height: 160px;
             overflow-y: auto;
-            z-index: 50;
+            z-index: 100;
             display: none;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
         }
 
         .autocomplete-item {
@@ -522,7 +521,10 @@
             font-size: 13px;
             color: #e5e7eb;
             cursor: pointer;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .autocomplete-item:last-child {
@@ -530,7 +532,7 @@
         }
 
         .autocomplete-item:hover, .autocomplete-item:active {
-            background: rgba(16, 185, 129, 0.2);
+            background: rgba(16, 185, 129, 0.25);
             color: #fff;
         }
 
@@ -545,8 +547,8 @@
 
         .option-btn {
             flex: 1;
-            padding: 10px 0;
-            font-size: 13px;
+            padding: 10px 4px;
+            font-size: 12px;
             font-weight: 600;
             text-align: center;
             color: var(--subtext-color);
@@ -684,14 +686,14 @@
         <div class="form-group">
             <label>Телефон WhatsApp (+7)</label>
             <input type="tel" id="custPhone" class="form-control" placeholder="+7 (707) 000-00-00" autocomplete="off" value="+7 (">
-            <div class="form-hint">🟢 На этот номер курьер совершит аудиозвонок в WhatsApp</div>
+            <div class="form-hint">🟢 Курьер совершит WhatsApp-аудиозвонок</div>
         </div>
 
         <div class="form-group">
-            <label>Адрес доставки (Костанай и обл.)</label>
-            <input type="text" id="custAddress" class="form-control" placeholder="г. Костанай, ул. Абая, 12, кв. 5" autocomplete="off" oninput="handleAddressInput(this.value)">
+            <label>Адрес доставки (Город, улица, дом)</label>
+            <input type="text" id="custAddress" class="form-control" placeholder="Начните вводить адрес или улицу..." autocomplete="off" oninput="handleAddressInput(this.value)">
             
-            <!-- Подсказки городов/улиц -->
+            <!-- Живой Автокомплит адресов OSM -->
             <div class="autocomplete-list" id="addressList"></div>
 
             <button type="button" class="btn-geo" onclick="detectLocation()">
@@ -700,16 +702,19 @@
         </div>
 
         <div class="form-group">
-            <label>Способ оплаты</label>
+            <label>Способ оплаты (Оплата при получении)</label>
             <div class="option-toggle">
-                <div class="option-btn active" id="btnPayKaspi" onclick="setPaymentType('kaspi')">💳 Kaspi / Перевод</div>
-                <div class="option-btn" id="btnPayCash" onclick="setPaymentType('cash')">💵 Наличные</div>
+                <div class="option-btn active" id="btnPayKaspi" onclick="setPaymentType('kaspi_delivery')">💳 Kaspi QR / Red</div>
+                <div class="option-btn" id="btnPayCash" onclick="setPaymentType('cash_delivery')">💵 Наличными курьеру</div>
+            </div>
+            <div class="form-hint" style="color: #9ca3af; margin-top: 6px;">
+                ℹ️ Оплата производится строго курьеру при получении.
             </div>
         </div>
 
         <div class="form-group">
-            <label>Комментарий курьеру (опционально)</label>
-            <input type="text" id="custComment" class="form-control" placeholder="Домофон не работает, подьезд 2..." autocomplete="off">
+            <label>Комментарий курьеру (квартира, подъезд)</label>
+            <input type="text" id="custComment" class="form-control" placeholder="Кв. 12, подъезд 2, домофон..." autocomplete="off">
         </div>
 
         <div class="checkout-actions" style="margin-top: 10px;">
@@ -732,18 +737,6 @@
             tg.expand(); 
             tg.ready(); 
         }
-
-        // Локации для автокомплита (Костанайская область)
-        const localCities = [
-            "г. Костанай",
-            "г. Рудный",
-            "г. Тобыл (Затобольск)",
-            "с. Мичуринское",
-            "с. Красный Партизан",
-            "г. Житикара",
-            "г. Лисаковск",
-            "г. Аркалык"
-        ];
 
         let catalog = [
             {
@@ -792,13 +785,14 @@
         let currentTab = 'model';
         let selectedModelIndex = 0;
         let selectedFlavorIndex = 0;
-        let paymentType = 'kaspi';
+        let paymentType = 'kaspi_delivery';
 
         let currentAngle = 0;
         let startY = 0;
         let currentY = 0;
         let isDragging = false;
         let lastSelectedIndex = -1;
+        let addressTimeout = null;
 
         const drum = document.getElementById('wheelDrum');
         const container = document.getElementById('wheelContainer');
@@ -990,38 +984,59 @@
             }
         });
 
-        /* АВТОКОМПЛИТ АДРЕСА (КОСТАНАЙСКАЯ ОБЛАСТЬ) */
+        /* РЕАЛЬНЫЙ АВТОКОМПЛИТ АДРЕСОВ И УЛИЦ ЧЕРЕЗ OPENSTREETMAP (NOMINATIM API) */
         function handleAddressInput(val) {
+            clearTimeout(addressTimeout);
             const listContainer = document.getElementById('addressList');
-            listContainer.innerHTML = '';
 
             if (!val || val.trim().length < 2) {
                 listContainer.style.display = 'none';
                 return;
             }
 
-            const query = val.toLowerCase();
-            const matches = localCities.filter(c => c.toLowerCase().includes(query));
+            // Делаем задержку в 300мс, чтобы не спамить запросами при быстром наборе
+            addressTimeout = setTimeout(() => {
+                const query = encodeURIComponent(`Костанай ${val.trim()}`);
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=kz&limit=6&accept-language=ru`;
 
-            if (matches.length > 0) {
-                matches.forEach(city => {
-                    const item = document.createElement('div');
-                    item.className = 'autocomplete-item';
-                    item.innerText = city;
-                    item.onclick = function() {
-                        document.getElementById('custAddress').value = city + ', ';
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        listContainer.innerHTML = '';
+                        if (data && data.length > 0) {
+                            data.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'autocomplete-item';
+                                
+                                // Форматируем красивое отображение улицы и города
+                                const displayName = item.display_name.split(',').slice(0, 3).join(',');
+                                div.innerText = displayName;
+
+                                div.onclick = function() {
+                                    document.getElementById('custAddress').value = displayName;
+                                    listContainer.style.display = 'none';
+                                };
+                                listContainer.appendChild(div);
+                            });
+                            listContainer.style.display = 'block';
+                        } else {
+                            listContainer.style.display = 'none';
+                        }
+                    })
+                    .catch(() => {
                         listContainer.style.display = 'none';
-                        document.getElementById('custAddress').focus();
-                    };
-                    listContainer.appendChild(item);
-                });
-                listContainer.style.display = 'block';
-            } else {
-                listContainer.style.display = 'none';
-            }
+                    });
+            }, 300);
         }
 
-        /* ОПРЕДЕЛЕНИЕ ГЕОЛОКАЦИИ ПО GPS И ПОИСК АДРЕСА */
+        // Закрываем подсказки при клике вне поля
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#custAddress') && !e.target.closest('#addressList')) {
+                document.getElementById('addressList').style.display = 'none';
+            }
+        });
+
+        /* ОПРЕДЕЛЕНИЕ ГЕОЛОКАЦИИ ПО GPS */
         function detectLocation() {
             if (!navigator.geolocation) {
                 alert('Геолокация не поддерживается вашим устройством.');
@@ -1053,10 +1068,10 @@
                             document.getElementById('custAddress').value = fullAddress;
                             triggerHaptic();
                         } else {
-                            alert('Не удалось распознать точный адрес, введите его вручную.');
+                            alert('Не удалось определить точный адрес, введите его вручную.');
                         }
                     } catch (e) {
-                        alert('Ошибка получения адреса по GPS. Введите адрес вручную.');
+                        alert('Ошибка геокодирования. Введите адрес вручную.');
                     } finally {
                         btn.innerText = '📍 Определить, где я нахожусь';
                     }
@@ -1072,8 +1087,8 @@
         function setPaymentType(type) {
             triggerHaptic();
             paymentType = type;
-            document.getElementById('btnPayKaspi').classList.toggle('active', type === 'kaspi');
-            document.getElementById('btnPayCash').classList.toggle('active', type === 'cash');
+            document.getElementById('btnPayKaspi').classList.toggle('active', type === 'kaspi_delivery');
+            document.getElementById('btnPayCash').classList.toggle('active', type === 'cash_delivery');
         }
 
         /* 4. ОТПРАВКА СФОРМИРОВАННОГО ЗАКАЗА */
@@ -1090,7 +1105,7 @@
                 return;
             }
             if (cleanPhone.length < 11) {
-                alert('Пожалуйста, введите полный номер телефона WhatsApp (11 цифр).');
+                alert('Пожалуйста, введите полный номер WhatsApp (11 цифр).');
                 return;
             }
             if (!address) {
@@ -1103,8 +1118,8 @@
             const model = catalog[selectedModelIndex];
             const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
 
-            // Подготовка правильной WhatsApp ссылки для курьера
             const waLink = `https://wa.me/${cleanPhone}`;
+            const payText = paymentType === 'kaspi_delivery' ? 'Kaspi QR / Red (при получении)' : 'Наличными курьеру (при получении)';
 
             const orderData = {
                 model_id: model.id,
@@ -1117,9 +1132,9 @@
                     phone: rawPhone,
                     clean_phone: cleanPhone,
                     whatsapp_link: waLink,
-                    delivery_type: 'Доставка',
+                    delivery_type: 'Доставка курьером',
                     address: address,
-                    payment_type: paymentType === 'kaspi' ? 'Kaspi / Перевод' : 'Наличные',
+                    payment_type: payText,
                     comment: comment
                 }
             };
@@ -1151,7 +1166,8 @@
             document.getElementById('successDetails').innerHTML = 
                 `Спасибо, <strong>${data.customer.name}</strong>!<br>` +
                 `Заказ: <strong>${data.model_name}</strong> (${data.flavor_name})<br>` +
-                `Адрес: <strong>${data.customer.address}</strong>`;
+                `Адрес: <strong>${data.customer.address}</strong><br>` +
+                `Оплата: <strong>${data.customer.payment_type}</strong>`;
         }
 
         function closeWebApp() {
