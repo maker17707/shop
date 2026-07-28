@@ -3,576 +3,877 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Выбор товара</title>
+    <title>WAKA Store</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-color: #3b82f6;
-            --accent-hover: #2563eb;
-            --text-main: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border-color: #334155;
+            --bg-color: #0d0d0d;
+            --card-bg: #1a1a1a;
+            --accent-color: #ff3b30;
+            --text-color: #ffffff;
+            --text-secondary: #8e8e93;
+            --border-color: #2c2c2e;
+            --input-bg: #2c2c2e;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-main);
+            color: var(--text-color);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
-        .container {
-            max-width: 480px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
-
+        /* HEADER */
         header {
+            padding: 15px;
             text-align: center;
-            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10;
         }
 
         header h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 4px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
-        header p {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        /* Шаги / Прогресс */
-        .steps-indicator {
+        /* TABS */
+        .tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .step-dot {
-            flex: 1;
-            height: 4px;
-            background-color: var(--border-color);
-            border-radius: 2px;
-            transition: background-color 0.3s;
-        }
-
-        .step-dot.active {
-            background-color: var(--accent-color);
-        }
-
-        /* Основной блок барабана / выбора */
-        .card-container {
-            background-color: var(--card-bg);
+            margin: 10px 15px 0 15px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 2px;
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px 0;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 13px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        /* MAIN CONTAINER */
+        main {
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-        }
-
-        .section-title {
-            font-size: 1rem;
-            font-weight: 500;
-            margin-bottom: 16px;
-            color: var(--text-secondary);
-            text-align: center;
-        }
-
-        /* Стили барабана прокрутки */
-        .wheel-wrapper {
             position: relative;
-            height: 280px;
             overflow: hidden;
-            margin-bottom: 20px;
+        }
+
+        .page {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: transform 0.3s ease;
+        }
+
+        /* 3D DRUM CONTAINER */
+        .picker-container {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
+            perspective: 1000px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .wheel-highlight {
+        .selection-highlight {
             position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 100%;
-            height: 70px;
-            border-top: 2px solid var(--accent-color);
-            border-bottom: 2px solid var(--accent-color);
-            background: rgba(59, 130, 246, 0.05);
+            width: 85%;
+            height: 50px;
+            border-top: 1px solid rgba(255, 59, 48, 0.5);
+            border-bottom: 1px solid rgba(255, 59, 48, 0.5);
+            background: rgba(255, 59, 48, 0.05);
             pointer-events: none;
-            z-index: 2;
             border-radius: 8px;
+            z-index: 1;
         }
 
-        .wheel-scroll {
+        .drum {
+            width: 85%;
+            height: 50px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+        }
+
+        .drum-item {
+            position: absolute;
             width: 100%;
-            height: 100%;
-            overflow-y: scroll;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
-            padding: 105px 0; /* Центрирование элементов */
-            scroll-snap-type: y mandatory;
-        }
-
-        .wheel-scroll::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
-        }
-
-        .wheel-item {
-            height: 70px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            backface-visibility: hidden;
             display: flex;
             align-items: center;
-            padding: 0 16px;
-            cursor: pointer;
-            scroll-snap-align: center;
-            transition: opacity 0.2s, transform 0.2s;
-            opacity: 0.4;
-            text-align: left;
-            gap: 12px;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .wheel-item.selected {
-            opacity: 1;
-            transform: scale(1.02);
+        .stock-tag {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #2c2c2e;
+            color: #8e8e93;
         }
 
-        .wheel-item-img {
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.05);
-            padding: 2px;
+        .stock-tag.low {
+            background: rgba(255, 149, 0, 0.2);
+            color: #ff9500;
         }
 
-        .wheel-item-color {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            border: 2px solid rgba(255,255,255,0.2);
+        .stock-tag.out {
+            background: rgba(255, 59, 48, 0.2);
+            color: #ff3b30;
         }
 
-        .wheel-item-info {
+        /* INFO CARD */
+        .info-card {
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            gap: 15px;
+            z-index: 5;
         }
 
-        .wheel-item-title {
-            font-size: 1rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .wheel-item-sub {
-            font-size: 0.75rem;
+        .price-title {
+            font-size: 14px;
             color: var(--text-secondary);
         }
 
-        /* Кнопки управления */
-        .btn-group {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            text-align: center;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
+        .price-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent-color);
         }
 
         .btn-primary {
-            background-color: var(--accent-color);
+            background: var(--accent-color);
             color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
         }
 
-        .btn-primary:hover {
-            background-color: var(--accent-hover);
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .btn-secondary {
-            background-color: transparent;
-            color: var(--text-main);
+            background: var(--input-bg);
+            color: var(--text-color);
             border: 1px solid var(--border-color);
-        }
-
-        .btn-secondary:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        /* Финальный экран подтверждения */
-        .checkout-screen {
-            display: none;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .checkout-preview {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 16px;
+            padding: 12px;
             border-radius: 12px;
-            border: 1px solid var(--border-color);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
         }
 
-        .checkout-img {
-            width: 64px;
-            height: 64px;
-            object-fit: contain;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.05);
+        /* FORM ELEMENTS */
+        .form-section {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        .checkout-details h3 {
-            font-size: 1.1rem;
-            margin-bottom: 4px;
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            position: relative;
         }
 
-        .checkout-details p {
-            font-size: 0.875rem;
+        .form-group label {
+            font-size: 12px;
             color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .price-tag {
-            font-size: 1.25rem;
-            font-weight: 700;
+        .form-group input, .form-group textarea {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .form-group textarea {
+            resize: none;
+            height: 70px;
+        }
+
+        .btn-geo {
+            background: transparent;
+            border: none;
             color: var(--accent-color);
-            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
+            padding: 4px 0;
+            cursor: pointer;
+        }
+
+        /* AUTOCOMPLETE LIST */
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .autocomplete-item {
+            padding: 10px 12px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        /* PAYMENT TYPE TOGGLE */
+        .payment-toggle {
+            display: flex;
+            gap: 10px;
+        }
+
+        .pay-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .pay-btn.active {
+            border-color: var(--accent-color);
+            color: var(--text-color);
+            background: rgba(255, 59, 48, 0.1);
+        }
+
+        /* CHECKOUT SUMMARY */
+        .order-summary {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .summary-item:last-child {
+            margin-bottom: 0;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-color);
+            font-weight: 700;
+        }
+
+        /* LOADER & SUCCESS */
+        .center-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            gap: 15px;
+        }
+
+        .icon-large {
+            font-size: 60px;
+        }
+
+        .loader {
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1 id="mainTitle">Выбор устройства</h1>
-            <p id="mainSubtitle">Прокрутите и выберите модель</p>
-        </header>
+    <header>
+        <h1 id="pageTitle">WAKA Express</h1>
+    </header>
 
-        <div class="steps-indicator">
-            <div class="step-dot active" id="dot1"></div>
-            <div class="step-dot" id="dot2"></div>
-            <div class="step-dot" id="dot3"></div>
+    <main>
+        <!-- СТРАНИЦА КАТАЛОГА / БАРАБАНА -->
+        <div id="catalogPage" class="page">
+            <div class="tabs">
+                <button class="tab-btn active" id="tabModel" onclick="switchTab('model')">1. Модель</button>
+                <button class="tab-btn" id="tabFlavor" onclick="switchTab('flavor')">2. Вкус</button>
+            </div>
+
+            <div class="picker-container" id="pickerContainer">
+                <div class="selection-highlight"></div>
+                <div class="drum" id="drum"></div>
+            </div>
+
+            <div class="info-card" id="infoCard">
+                <div class="price-row">
+                    <span class="price-title">Стоимость:</span>
+                    <span class="price-value" id="priceDisplay">0 ₸</span>
+                </div>
+                <button class="btn-primary" id="actionBtn" onclick="handleMainAction()">Выбрать вкус</button>
+            </div>
         </div>
 
-        <div class="card-container">
-            <!-- Шаг 1 и 2: Барабан выбора -->
-            <div id="wheelContainer">
-                <div class="section-title" id="sectionTitle">Доступные модели</div>
-                <div class="wheel-wrapper">
-                    <div class="wheel-highlight"></div>
-                    <div class="wheel-scroll" id="wheelScroll" onscroll="handleScroll()">
-                        <!-- Динамические элементы генерируются через JS -->
+        <!-- СТРАНИЦА ОФОРМЛЕНИЯ (ДАННЫЕ ДОСТАВКИ) -->
+        <div id="formSection" class="page" style="display: none;">
+            <div class="form-section">
+                <div class="order-summary">
+                    <div class="summary-item">
+                        <span>Товар:</span>
+                        <span id="summaryModel">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Вкус:</span>
+                        <span id="summaryFlavor">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>К оплате:</span>
+                        <span id="summaryPrice">0 ₸</span>
                     </div>
                 </div>
-            </div>
 
-            <!-- Шаг 3: Экран подтверждения -->
-            <div class="checkout-screen" id="checkoutScreen">
-                <div class="section-title">Ваш выбор</div>
-                <div class="checkout-preview">
-                    <img id="checkoutImg" class="checkout-img" src="" alt="Товар">
-                    <div class="checkout-details">
-                        <h3 id="checkoutModel">Модель</h3>
-                        <p id="checkoutFlavor">Вкус</p>
-                        <div id="checkoutStock" style="font-size: 0.75rem; color: #10b981; margin-top: 2px;"></div>
-                        <div class="price-tag" id="checkoutPrice">0 ₸</div>
+                <div class="form-group">
+                    <label>Ваше Имя</label>
+                    <input type="text" id="custName" placeholder="Иван">
+                </div>
+
+                <div class="form-group">
+                    <label>Телефон (WhatsApp)</label>
+                    <input type="tel" id="custPhone" placeholder="+7 700 000 0000">
+                </div>
+
+                <div class="form-group">
+                    <label>Адрес Доставки</label>
+                    <input type="text" id="custAddress" placeholder="Улица, дом, квартира" oninput="handleAddressInput(this.value)">
+                    <button class="btn-geo" onclick="detectLocation()">📍 Определить, где я нахожусь</button>
+                    <div class="autocomplete-list" id="addressList"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Способ Оплаты</label>
+                    <div class="payment-toggle">
+                        <div class="pay-btn active" id="btnPayKaspi" onclick="setPaymentType('kaspi_delivery')">Kaspi QR / Red</div>
+                        <div class="pay-btn" id="btnPayCash" onclick="setPaymentType('cash_delivery')">Наличными</div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Блок кнопок управления -->
-            <div class="btn-group" id="btnGroup">
-                <button class="btn btn-secondary" id="btnBack" style="display: none;" onclick="prevStep()">Назад</button>
-                <button class="btn btn-primary" id="btnNext" onclick="nextStep()">Выбрать</button>
+                <div class="form-group">
+                    <label>Комментарий к заказу</label>
+                    <textarea id="custComment" placeholder="Подъезд, код двери или пожелания..."></textarea>
+                </div>
+
+                <button class="btn-primary" onclick="submitFinalOrder()">Подтвердить и Заказать</button>
+                <button class="btn-secondary" onclick="goBackToCatalog()">← Назад к выбору</button>
             </div>
         </div>
-    </div>
+
+        <!-- СТРАНИЦА УСПЕХА -->
+        <div id="successSection" class="page" style="display: none;">
+            <div class="center-screen">
+                <div class="icon-large">✅</div>
+                <h2>Заказ принят!</h2>
+                <p style="color: var(--text-secondary); font-size: 14px;">Менеджер свяжется с вами в течение нескольких минут для подтверждения.</p>
+                <button class="btn-primary" onclick="closeWebApp()" style="margin-top: 20px;">Завершить</button>
+            </div>
+        </div>
+
+        <!-- ЭКРАН ЗАГРУЗКИ (Заменяет статический массив) -->
+        <div id="loaderSection" class="page">
+            <div class="center-screen">
+                <div class="loader"></div>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-top: 10px;">Загрузка каталога...</p>
+            </div>
+        </div>
+    </main>
 
     <script>
-        // Резервный каталог на случай проблем с сетью
-        let catalog = [
-            {
-                "id": "m1",
-                "name": "Загрузка каталога...",
-                "puffs": "Подождите",
-                "price": "0 ₸",
-                "image": "",
-                "flavors": [
-                    { "id": "f1", "name": "Загрузка вкусов...", "quantity": 0, "color": "#3b82f6" }
-                ]
-            }
-        ];
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) {
+            tg.expand();
+            tg.ready();
+        }
 
-        let currentStep = 1; // 1 - Модель, 2 - Вкус, 3 - Подтверждение
+        // Глобальное состояние каталога (загружается с сервера)
+        let catalog = [];
+
+        let currentTab = 'model'; // 'model' или 'flavor'
         let selectedModelIndex = 0;
         let selectedFlavorIndex = 0;
+        let paymentType = 'kaspi_delivery';
+        let addressTimeout = null;
 
-        // Загружаем актуальные данные с бэкенда при старте
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchCatalog();
-        });
+        // Элементы барабана
+        const drum = document.getElementById('drum');
+        const container = document.getElementById('pickerContainer');
 
-        function fetchCatalog() {
-            fetch('/api/catalog')
-                .then(res => res.json())
-                .then(data => {
-                    const rawItems = data.catalog || data;
-                    if (rawItems && Array.isArray(rawItems) && rawItems.length > 0) {
-                        catalog = transformBackendData(rawItems);
-                        renderDrum();
-                    }
-                })
-                .catch(err => {
-                    console.error("Ошибка загрузки каталога с сервера, используется резервный:", err);
-                    // Если бэкенд не ответил, оставляем дефолт или пустой массив
-                });
+        let startY = 0;
+        let currentY = 0;
+        let isDragging = false;
+        let currentAngle = 0;
+
+        // Загрузка данных каталога и остатков из базы через сервер
+        async function loadCatalogData() {
+            try {
+                const response = await fetch('/api/catalog');
+                if (!response.ok) throw new Error('Ошибка сети');
+                catalog = await response.json();
+                
+                document.getElementById('loaderSection').style.display = 'none';
+                renderDrum();
+                updateUI();
+            } catch (error) {
+                console.error('Ошибка загрузки каталога:', error);
+                alert('Не удалось загрузить каталог. Попробуйте позже.');
+            }
         }
 
-        // Преобразование плоского списка из БД (model_name, flavor_name, quantity, selling_price, image_url) в иерархию
-        function transformBackendData(rawItems) {
-            const grouped = {};
+        function triggerHaptic() {
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.selectionChanged();
+            }
+        }
 
-            rawItems.forEach(item => {
-                const modelKey = item.model_name || item.name || "Устройство";
-                if (!grouped[modelKey]) {
-                    grouped[modelKey] = {
-                        id: item.id || Math.random().toString(),
-                        name: modelKey,
-                        puffs: item.puffs || "В наличии",
-                        price: `${item.selling_price || item.price || 0} ₸`,
-                        image: item.image_url || item.image || '',
-                        flavors: []
-                    };
+        function getAngleStep(count) {
+            return count > 0 ? 360 / Math.max(count, 8) : 45;
+        }
+
+        /* ОТРИСОВКА БАРАБАНА */
+        function renderDrum() {
+            drum.innerHTML = '';
+            if (!catalog.length) return;
+
+            const items = currentTab === 'model' 
+                ? catalog 
+                : catalog[selectedModelIndex].flavors;
+
+            const count = items.length;
+            const angleStep = getAngleStep(count);
+            const radius = 120; // Радиус вращения барабана
+
+            items.forEach((item, i) => {
+                const el = document.createElement('div');
+                el.className = 'drum-item';
+                
+                // Расчет угла для 3D вращения
+                const angle = i * angleStep;
+                el.style.transform = `rotateX(${-angle}deg) translateZ(${radius}px)`;
+
+                let stockText = '';
+                let stockClass = '';
+                
+                if (currentTab === 'model') {
+                    const totalStock = item.flavors.reduce((acc, f) => acc + f.stock, 0);
+                    stockText = totalStock > 0 ? `${totalStock} шт` : 'Нет';
+                    if (totalStock === 0) stockClass = 'out';
+                    else if (totalStock <= 3) stockClass = 'low';
+                } else {
+                    const stock = item.stock;
+                    stockText = stock > 0 ? `${stock} шт` : 'Нет';
+                    if (stock === 0) stockClass = 'out';
+                    else if (stock <= 2) stockClass = 'low';
                 }
 
-                grouped[modelKey].flavors.push({
-                    id: item.id || Math.random().toString(),
-                    name: item.flavor_name || item.name || "Классический",
-                    quantity: item.quantity !== undefined ? item.quantity : 1,
-                    color: item.flavor_icon || item.color || '#3b82f6'
-                });
+                el.innerHTML = `
+                    <span>${item.name}</span>
+                    <span class="stock-tag ${stockClass}">${stockText}</span>
+                `;
+                drum.appendChild(el);
             });
 
-            return Object.values(grouped);
+            currentAngle = (currentTab === 'model' ? selectedModelIndex : selectedFlavorIndex) * angleStep;
+            updateDrumTransform();
         }
 
-        // Отрисовка элементов в барабане
-        function renderDrum() {
-            const scrollContainer = document.getElementById('wheelScroll');
-            scrollContainer.innerHTML = '';
+        function updateDrumTransform() {
+            drum.style.transform = `rotateX(${currentAngle}deg)`;
+            
+            // Вычисление текущего выбранного индекса
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            if (!items.length) return;
 
-            let itemsToRender = [];
-            if (currentStep === 1) {
-                itemsToRender = catalog;
-            } else if (currentStep === 2) {
-                const currentModel = catalog[selectedModelIndex] || catalog[0];
-                itemsToRender = currentModel.flavors || [];
+            const angleStep = getAngleStep(items.length);
+            let index = Math.round(currentAngle / angleStep) % items.length;
+            if (index < 0) index += items.length;
+
+            if (currentTab === 'model' && index !== selectedModelIndex) {
+                selectedModelIndex = index;
+                selectedFlavorIndex = 0; // Сброс вкуса при смене модели
+                triggerHaptic();
+                updateUI();
+            } else if (currentTab === 'flavor' && index !== selectedFlavorIndex) {
+                selectedFlavorIndex = index;
+                triggerHaptic();
+                updateUI();
             }
+        }
 
-            if (itemsToRender.length === 0) {
-                scrollContainer.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--text-secondary);">Нет доступных элементов</div>`;
+        function updateUI() {
+            if (!catalog.length) return;
+
+            const model = catalog[selectedModelIndex];
+            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
+
+            document.getElementById('priceDisplay').innerText = `${model.price.toLocaleString()} ₸`;
+
+            const actionBtn = document.getElementById('actionBtn');
+            if (currentTab === 'model') {
+                actionBtn.innerText = 'Выбрать вкус';
+                actionBtn.disabled = false;
+            } else {
+                if (!flavor || flavor.stock <= 0) {
+                    actionBtn.innerText = 'Нет в наличии';
+                    actionBtn.disabled = true;
+                } else {
+                    actionBtn.innerText = 'Оформить заказ';
+                    actionBtn.disabled = false;
+                }
+            }
+        }
+
+        /* ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК */
+        function switchTab(tab) {
+            if (currentTab === tab) return;
+            currentTab = tab;
+
+            document.getElementById('tabModel').classList.toggle('active', tab === 'model');
+            document.getElementById('tabFlavor').classList.toggle('active', tab === 'flavor');
+
+            renderDrum();
+            updateUI();
+        }
+
+        function handleMainAction() {
+            if (currentTab === 'model') {
+                switchTab('flavor');
+            } else {
+                goToFormPage();
+            }
+        }
+
+        /* ПЕРЕХОД К ФОРМЕ ДОСТАВКИ */
+        function goToFormPage() {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+
+            const model = catalog[selectedModelIndex];
+            const flavor = model.flavors[selectedFlavorIndex];
+
+            document.getElementById('summaryModel').innerText = model.name;
+            document.getElementById('summaryFlavor').innerText = flavor.name;
+            document.getElementById('summaryPrice').innerText = `${model.price.toLocaleString()} ₸`;
+
+            document.getElementById('pageTitle').innerText = 'Данные Доставки';
+            document.getElementById('catalogPage').style.display = 'none';
+            document.getElementById('formSection').style.display = 'flex';
+
+            // Автозаполнение имени из данных Telegram
+            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const u = tg.initDataUnsafe.user;
+                const nameInput = document.getElementById('custName');
+                if (!nameInput.value) {
+                    nameInput.value = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+                }
+            }
+        }
+
+        function goBackToCatalog() {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            document.getElementById('pageTitle').innerText = 'WAKA Express';
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('catalogPage').style.display = 'flex';
+        }
+
+        /* ТИП ОПЛАТЫ */
+        function setPaymentType(type) {
+            paymentType = type;
+            document.getElementById('btnPayKaspi').classList.toggle('active', type === 'kaspi_delivery');
+            document.getElementById('btnPayCash').classList.toggle('active', type === 'cash_delivery');
+            triggerHaptic();
+        }
+
+        /* ГЕОЛОКАЦИЯ И OSM АВТОКОМПЛИТ */
+        function detectLocation() {
+            if (!navigator.geolocation) {
+                alert('Геолокация не поддерживается вашим устройством');
                 return;
             }
 
-            itemsToRender.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = `wheel-item ${index === 0 ? 'selected' : ''}`;
-                div.onclick = () => scrollToItem(index);
+            const btn = document.querySelector('.btn-geo');
+            btn.innerText = '⌛ Определение адреса...';
 
-                if (currentStep === 1) {
-                    const imgHtml = item.image ? `<img class="wheel-item-img" src="${item.image}" alt="">` : `<div class="wheel-item-img"></div>`;
-                    div.innerHTML = `
-                        ${imgHtml}
-                        <div class="wheel-item-info">
-                            <div class="wheel-item-title">${item.name}</div>
-                            <div class="wheel-item-sub">${item.price}</div>
-                        </div>
-                    `;
-                } else {
-                    div.innerHTML = `
-                        <div class="wheel-item-color" style="background-color: ${item.color || '#3b82f6'};"></div>
-                        <div class="wheel-item-info">
-                            <div class="wheel-item-title">${item.name}</div>
-                            <div class="wheel-item-sub">Остаток: ${item.quantity !== undefined ? item.quantity : 'много'} шт.</div>
-                        </div>
-                    `;
-                }
-                scrollContainer.appendChild(div);
-            });
+            navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
 
-            highlightCenteredItem();
-        }
-
-        // Обработка скролла барабана для определения выбранного элемента
-        function handleScroll() {
-            const container = document.getElementById('wheelScroll');
-            const items = container.getElementsByClassName('wheel-item');
-            const containerCenter = container.scrollTop + container.clientHeight / 2;
-
-            let closestIndex = 0;
-            let minDistance = Infinity;
-
-            Array.from(items).forEach((item, index) => {
-                const itemCenter = item.offsetTop + item.offsetHeight / 2;
-                const distance = Math.abs(containerCenter - itemCenter);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestIndex = index;
-                }
-            });
-
-            Array.from(items).forEach((item, index) => {
-                if (index === closestIndex) {
-                    item.classList.add('selected');
-                } else {
-                    item.classList.remove('selected');
-                }
-            });
-
-            if (currentStep === 1) {
-                selectedModelIndex = closestIndex;
-            } else if (currentStep === 2) {
-                selectedFlavorIndex = closestIndex;
-            }
-        }
-
-        function scrollToItem(index) {
-            const container = document.getElementById('wheelScroll');
-            const items = container.getElementsByClassName('wheel-item');
-            if (items[index]) {
-                items[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        // Управление шагами
-        function nextStep() {
-            if (currentStep === 1) {
-                currentStep = 2;
-                selectedFlavorIndex = 0;
-                document.getElementById('mainTitle.textContent' || 'mainTitle').innerText = 'Выбор вкуса';
-                document.getElementById('mainSubtitle').innerText = 'Выберите желаемый вкус';
-                document.getElementById('sectionTitle').innerText = 'Доступные вкусы';
-                document.getElementById('dot1').classList.remove('active');
-                document.getElementById('dot2').classList.add('active');
-                document.getElementById('btnBack').style.display = 'block';
-                document.getElementById('btnNext').innerText = 'Подтвердить';
-                renderDrum();
-            } else if (currentStep === 2) {
-                currentStep = 3;
-                document.getElementById('mainTitle').innerText = 'Заказ сформирован';
-                document.getElementById('mainSubtitle').innerText = 'Проверьте данные и отправьте';
-                document.getElementById('dot2').classList.remove('active');
-                document.getElementById('dot3').classList.add('active');
-                
-                // Переключаем видимость блоков
-                document.getElementById('wheelContainer').style.display = 'none';
-                document.getElementById('checkoutScreen').style.display = 'flex';
-                document.getElementById('btnBack').style.display = 'block';
-                document.getElementById('btnNext').innerText = 'Отправить администратору';
-
-                // Заполняем данные экрана подтверждения
-                const model = catalog[selectedModelIndex] || catalog[0];
-                const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
-
-                document.getElementById('checkoutImg').src = model.image || '';
-                document.getElementById('checkoutModel').innerText = model.name;
-                document.getElementById('checkoutFlavor').innerText = `Вкус: ${flavor.name}`;
-                document.getElementById('checkoutStock').innerText = `В наличии: ${flavor.quantity} шт.`;
-                document.getElementById('checkoutPrice').innerText = model.price;
-            } else if (currentStep === 3) {
-                // Отправка данных на ваш сервер (main.py)
-                const model = catalog[selectedModelIndex] || catalog[0];
-                const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
-
-                const payload = {
-                    model_id: model.id,
-                    model_name: model.name,
-                    flavor_id: flavor.id,
-                    flavor_name: flavor.name,
-                    price: model.price
-                };
-
-                // Отправляем данные на бэкенд
-                fetch('/api/submit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                })
-                .then(res => res.json())
-                .then(response => {
-                    alert('Заказ успешно отправлен администратору!');
-                    // Здесь можно закрыть WebApp, если запущено через Telegram:
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        window.Telegram.WebApp.close();
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`);
+                        const data = await res.json();
+                        
+                        if (data && data.display_name) {
+                            document.getElementById('custAddress').value = data.display_name;
+                        } else {
+                            document.getElementById('custAddress').value = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+                        }
+                    } catch (e) {
+                        document.getElementById('custAddress').value = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+                    } finally {
+                        btn.innerHTML = '📍 Определить, где я нахожусь';
                     }
-                })
-                .catch(err => {
-                    console.error('Ошибка отправки:', err);
-                    alert('Заказ сформирован! (Данные отправлены локально)');
-                });
+                },
+                (err) => {
+                    alert('Не удалось получить геопозицию. Введите адрес вручную.');
+                    btn.innerHTML = '📍 Определить, где я нахожусь';
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        function handleAddressInput(val) {
+            clearTimeout(addressTimeout);
+            const listContainer = document.getElementById('addressList');
+            
+            if (!val || val.length < 3) {
+                listContainer.style.display = 'none';
+                return;
+            }
+
+            addressTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&limit=5&accept-language=ru`);
+                    const data = await res.json();
+
+                    if (data && data.length > 0) {
+                        listContainer.innerHTML = '';
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'autocomplete-item';
+                            div.innerText = item.display_name;
+                            div.onclick = () => {
+                                document.getElementById('custAddress').value = item.display_name;
+                                listContainer.style.display = 'none';
+                            };
+                            listContainer.appendChild(div);
+                        });
+                        listContainer.style.display = 'block';
+                    } else {
+                        listContainer.style.display = 'none';
+                    }
+                } catch (e) {
+                    listContainer.style.display = 'none';
+                }
+            }, 400);
+        }
+
+        /* ОТПРАВКА ЗАКАЗА */
+        async function submitFinalOrder() {
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            const comment = document.getElementById('custComment').value.trim();
+
+            if (!name) {
+                alert('Пожалуйста, укажите ваше имя');
+                return;
+            }
+            if (!phone || phone.length < 10) {
+                alert('Введите корректный номер телефона');
+                return;
+            }
+            if (!address) {
+                alert('Укажите адрес доставки');
+                return;
+            }
+
+            const model = catalog[selectedModelIndex];
+            const flavor = model.flavors[selectedFlavorIndex];
+
+            const orderPayload = {
+                model: model.name,
+                flavor: flavor.name,
+                price: model.price,
+                customer: {
+                    name,
+                    phone,
+                    address,
+                    comment,
+                    payment: paymentType === 'kaspi_delivery' ? 'Kaspi QR / Red' : 'Наличными'
+                },
+                initData: tg ? tg.initData : ''
+            };
+
+            try {
+                if (tg && tg.sendData) {
+                    tg.sendData(JSON.stringify(orderPayload));
+                }
+            } catch (e) {
+                console.log('Ошибка отправки tg.sendData:', e);
+            }
+
+            document.getElementById('pageTitle').innerText = 'Заказ Успешен';
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('successSection').style.display = 'flex';
+        }
+
+        function closeWebApp() {
+            if (tg) {
+                tg.close();
+            } else {
+                window.location.reload();
             }
         }
 
-        function prevStep() {
-            if (currentStep === 2) {
-                currentStep = 1;
-                selectedModelIndex = 0;
-                document.getElementById('mainTitle').innerText = 'Выбор устройства';
-                document.getElementById('mainSubtitle').innerText = 'Прокрутите и выберите модель';
-                document.getElementById('sectionTitle').innerText = 'Доступные модели';
-                document.getElementById('dot2').classList.remove('active');
-                document.getElementById('dot1').classList.add('active');
-                document.getElementById('btnBack').style.display = 'none';
-                document.getElementById('btnNext').innerText = 'Выбрать';
-                renderDrum();
-            } else if (currentStep === 3) {
-                currentStep = 2;
-                document.getElementById('mainTitle').innerText = 'Выбор вкуса';
-                document.getElementById('mainSubtitle').innerText = 'Выберите желаемый вкус';
-                document.getElementById('dot3').classList.remove('active');
-                document.getElementById('dot2').classList.add('active');
-
-                document.getElementById('checkoutScreen').style.display = 'none';
-                document.getElementById('wheelContainer').style.display = 'block';
-                document.getElementById('btnNext').innerText = 'Подтвердить';
-                renderDrum();
-            }
+        /* ОБРАБОТКА СВАЙПОВ И ЖЕСТОВ БАРАБАНА */
+        function onTouchStart(e) {
+            isDragging = true;
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
         }
+
+        function onTouchMove(e) {
+            if (!isDragging) return;
+            currentY = e.touches ? e.touches[0].clientY : e.clientY;
+            const deltaY = startY - currentY;
+            startY = currentY;
+
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            if (!items.length) return;
+
+            const angleStep = getAngleStep(items.length);
+            
+            currentAngle += deltaY * 0.4;
+            
+            const maxAngle = (items.length - 1) * angleStep;
+            if (currentAngle < 0) currentAngle = 0;
+            if (currentAngle > maxAngle) currentAngle = maxAngle;
+
+            updateDrumTransform();
+        }
+
+        function onTouchEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            if (!items.length) return;
+
+            const angleStep = getAngleStep(items.length);
+            const targetIndex = Math.round(currentAngle / angleStep);
+            
+            currentAngle = targetIndex * angleStep;
+            drum.style.transition = 'transform 0.2s ease-out';
+            updateDrumTransform();
+
+            setTimeout(() => {
+                drum.style.transition = 'transform 0.1s ease-out';
+            }, 200);
+        }
+
+        container.addEventListener('touchstart', onTouchStart, { passive: true });
+        container.addEventListener('touchmove', onTouchMove, { passive: true });
+        container.addEventListener('touchend', onTouchEnd);
+
+        container.addEventListener('mousedown', onTouchStart);
+        window.addEventListener('mousemove', onTouchMove);
+        window.addEventListener('mouseup', onTouchEnd);
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.form-group')) {
+                document.getElementById('addressList').style.display = 'none';
+            }
+        });
+
+        // Запуск загрузки каталога при загрузке страницы
+        window.addEventListener('DOMContentLoaded', loadCatalogData);
     </script>
 </body>
 </html>
