@@ -1,948 +1,1111 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vape Store Catalog</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-color: #0a0a0c;
-            --accent-color: #10b981;
-            --accent-glow: rgba(16, 185, 129, 0.4);
-            --text-color: #f3f4f6;
-            --subtext-color: #9ca3af;
-            --img-size: 64px;
-            --wheel-radius: 140px;
-            --item-height: 68px;
-        }
-
-        body.mode-model {
-            --bg-color: #0a0a0c;
-            --accent-color: #10b981;
-            --accent-glow: rgba(16, 185, 129, 0.4);
-            --img-size: 64px;
-            --wheel-radius: 140px;
-            --item-height: 68px;
-        }
-
-        body.mode-flavor {
-            --bg-color: #050b14;
-            --accent-color: #00f2fe;
-            --accent-glow: rgba(0, 242, 254, 0.4);
-            --img-size: 42px;
-            --wheel-radius: 100px;
-            --item-height: 50px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html, body {
-            min-height: 100vh;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, sans-serif;
-            overflow-x: hidden;
-            transition: background-color 0.4s ease;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            padding-bottom: 24px;
-        }
-
-        .ambient-light {
-            position: absolute;
-            top: 25%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            transition: all 0.5s ease;
-            filter: blur(40px);
-        }
-
-        header {
-            position: relative;
-            z-index: 10;
-            padding: 20px 16px 10px;
-            text-align: center;
-        }
-
-        header h1 {
-            font-size: 20px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, #fff 30%, var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            transition: all 0.4s ease;
-        }
-
-        /* 1. ЭКРАН ВЫБОРА (БАРАБАН) */
-        .picker-section {
-            position: relative;
-            z-index: 10;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .tabs {
-            display: flex;
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(12px);
-            border-radius: 14px;
-            padding: 4px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .tab {
-            padding: 8px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 10px;
-            color: var(--subtext-color);
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .tab.active {
-            background: var(--accent-color);
-            color: #fff;
-            box-shadow: 0 3px 12px var(--accent-glow);
-        }
-
-        .wheel-wrapper {
-            position: relative;
-            width: 100%;
-            height: 280px;
-            perspective: 900px;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: grab;
-        }
-
-        .wheel-wrapper:active { cursor: grabbing; }
-
-        .wheel-selection-overlay {
-            position: absolute;
-            top: 50%;
-            left: 5%;
-            right: 5%;
-            transform: translateY(-50%);
-            height: calc(var(--item-height) + 6px);
-            border-top: 1.5px solid var(--accent-color);
-            border-bottom: 1.5px solid var(--accent-color);
-            background: rgba(255, 255, 255, 0.03);
-            pointer-events: none;
-            z-index: 5;
-            box-shadow: 0 0 20px var(--accent-glow);
-            border-radius: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .wheel-drum {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            transition: transform 0.1s ease-out;
-            touch-action: none;
-        }
-
-        .wheel-item {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 300px;
-            height: var(--item-height);
-            margin-top: calc(var(--item-height) / -2);
-            margin-left: -150px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 16px;
-            backdrop-filter: blur(8px);
-            backface-visibility: hidden;
-            transition: height 0.3s ease, margin 0.3s ease, border-color 0.3s ease;
-        }
-
-        .wheel-item-img {
-            height: var(--img-size);
-            width: auto;
-            max-width: 65px;
-            object-fit: contain;
-            margin-right: 12px;
-            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.75));
-            pointer-events: none;
-            transition: height 0.3s ease;
-        }
-
-        .wheel-item-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            box-shadow: 0 0 10px currentColor;
-            flex-shrink: 0;
-        }
-
-        .wheel-item-info {
-            flex: 1;
-            text-align: left;
-            overflow: hidden;
-        }
-
-        .wheel-item-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: #fff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .wheel-item-sub {
-            font-size: 11px;
-            color: var(--subtext-color);
-            margin-top: 2px;
-        }
-
-        .wheel-item-price {
-            font-size: 15px;
-            font-weight: 800;
-            color: #34d399;
-            flex-shrink: 0;
-            margin-left: 10px;
-        }
-
-        .info-card {
-            margin: 0 16px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
-            backdrop-filter: blur(12px);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            z-index: 10;
-        }
-
-        .info-details {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .info-details h3 { 
-            font-size: 15px; 
-            font-weight: 700; 
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .info-details p { 
-            font-size: 12px; 
-            color: var(--subtext-color); 
-            margin-top: 3px; 
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .btn-order {
-            padding: 14px 20px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #fff;
-            background: linear-gradient(135deg, var(--accent-color), #064e3b);
-            border: none;
-            border-radius: 14px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px var(--accent-glow);
-            outline: none;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        body.mode-flavor .btn-order {
-            background: linear-gradient(135deg, var(--accent-color), #0e7490);
-        }
-
-        .btn-order:active { transform: scale(0.95); }
-
-        /* 2. ЭКРАН ПОДТВЕРЖДЕНИЯ (CHECKOUT) */
-        .checkout-section {
-            display: none;
-            position: relative;
-            z-index: 10;
-            flex: 1;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 20px;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .preview-card {
-            width: 100%;
-            max-width: 340px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            backdrop-filter: blur(16px);
-            padding: 20px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .preview-img {
-            height: 140px;
-            width: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
-            margin-bottom: 12px;
-        }
-
-        .preview-flavor-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 14px;
-        }
-
-        .flavor-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            box-shadow: 0 0 8px currentColor;
-        }
-
-        .preview-price {
-            font-size: 22px;
-            font-weight: 800;
-            color: #34d399;
-            margin-bottom: 14px;
-        }
-
-        .preview-description {
-            font-size: 13px;
-            line-height: 1.5;
-            color: var(--subtext-color);
-            padding: 10px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.1);
-        }
-
-        .preview-description strong {
-            color: #fff;
-        }
-
-        .checkout-actions {
-            width: 100%;
-            max-width: 340px;
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .btn-back {
-            flex: 1;
-            padding: 14px 0;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--subtext-color);
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-confirm {
-            flex: 1.5;
-            padding: 14px 0;
-            font-size: 14px;
-            font-weight: 700;
-            color: #fff;
-            background: linear-gradient(135deg, #10b981, #064e3b);
-            border: none;
-            border-radius: 14px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-            transition: all 0.2s ease;
-        }
-
-        .btn-back:active, .btn-confirm:active {
-            transform: scale(0.96);
-        }
-
-        /* 3. ЭКРАН ВВОДА ДАННЫХ (ФОРМА ДОСТАВКИ) */
-        .form-section {
-            display: none;
-            position: relative;
-            z-index: 10;
-            flex: 1;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px 20px;
-            animation: fadeIn 0.3s ease-in-out;
-            width: 100%;
-            max-width: 360px;
-            margin: 0 auto;
-        }
-
-        .form-group {
-            width: 100%;
-            margin-bottom: 12px;
-            text-align: left;
-            position: relative;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--subtext-color);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-hint {
-            font-size: 11px;
-            color: #10b981;
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 14px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 12px;
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s ease;
-            -webkit-user-select: text;
-            user-select: text;
-        }
-
-        .form-control:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 10px var(--accent-glow);
-            background: rgba(255, 255, 255, 0.09);
-        }
-
-        /* КНОПКА ГЕОЛОКАЦИИ */
-        .btn-geo {
-            width: 100%;
-            padding: 10px;
-            margin-top: 6px;
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 10px;
-            color: #34d399;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-        }
-
-        .btn-geo:active {
-            transform: scale(0.98);
-            background: rgba(16, 185, 129, 0.25);
-        }
-
-        /* АВТОКОМПЛИТ ДЛЯ АДРЕСА */
-        .autocomplete-list {
-            position: absolute;
-            top: calc(100% - 35px);
-            left: 0;
-            right: 0;
-            background: #121824;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            max-height: 160px;
-            overflow-y: auto;
-            z-index: 100;
-            display: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-        }
-
-        .autocomplete-item {
-            padding: 10px 12px;
-            font-size: 13px;
-            color: #e5e7eb;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .autocomplete-item:last-child {
-            border-bottom: none;
-        }
-
-        .autocomplete-item:hover, .autocomplete-item:active {
-            background: rgba(16, 185, 129, 0.25);
-            color: #fff;
-        }
-
-        .option-toggle {
-            display: flex;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.04);
-            padding: 4px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .option-btn {
-            flex: 1;
-            padding: 10px 4px;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            color: var(--subtext-color);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .option-btn.active {
-            background: var(--accent-color);
-            color: #fff;
-            box-shadow: 0 2px 10px var(--accent-glow);
-        }
-
-        /* 4. ЭКРАН УСПЕХА */
-        .success-section {
-            display: none;
-            position: relative;
-            z-index: 10;
-            flex: 1;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            text-align: center;
-            animation: fadeIn 0.4s ease-in-out;
-        }
-
-        .success-icon {
-            width: 72px;
-            height: 72px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            color: #fff;
-            box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
-            margin-bottom: 16px;
-        }
-
-        .success-title {
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 8px;
-            color: #fff;
-        }
-
-        .success-text {
-            font-size: 13px;
-            color: var(--subtext-color);
-            line-height: 1.5;
-            max-width: 280px;
-            margin-bottom: 24px;
-        }
-
-        .btn-close-app {
-            width: 100%;
-            max-width: 280px;
-            padding: 14px 0;
-            font-size: 14px;
-            font-weight: 700;
-            color: #fff;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-close-app:active { transform: scale(0.96); }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vape Store Catalog</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #0a0a0c;
+            --accent-color: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.4);
+            --text-color: #f3f4f6;
+            --subtext-color: #9ca3af;
+            --img-size: 64px;
+            --wheel-radius: 140px;
+            --item-height: 68px;
+        }
+
+        body.mode-model {
+            --bg-color: #0a0a0c;
+            --accent-color: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.4);
+            --img-size: 64px;
+            --wheel-radius: 140px;
+            --item-height: 68px;
+        }
+
+        body.mode-flavor {
+            --bg-color: #050b14;
+            --accent-color: #00f2fe;
+            --accent-glow: rgba(0, 242, 254, 0.4);
+            --img-size: 42px;
+            --wheel-radius: 100px;
+            --item-height: 50px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.4s ease;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            padding-bottom: 24px;
+        }
+
+        .ambient-light {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            transition: all 0.5s ease;
+            filter: blur(40px);
+        }
+
+        header {
+            position: relative;
+            z-index: 10;
+            padding: 20px 16px 10px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #fff 30%, var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.4s ease;
+        }
+
+        /* 1. ЭКРАН ВЫБОРА (БАРАБАН) */
+        .picker-section {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .tab {
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 10px;
+            color: var(--subtext-color);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .tab.active {
+            background: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 3px 12px var(--accent-glow);
+        }
+
+        .wheel-wrapper {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            perspective: 900px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+        }
+
+        .wheel-wrapper:active { cursor: grabbing; }
+
+        .wheel-selection-overlay {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            right: 5%;
+            transform: translateY(-50%);
+            height: calc(var(--item-height) + 6px);
+            border-top: 1.5px solid var(--accent-color);
+            border-bottom: 1.5px solid var(--accent-color);
+            background: rgba(255, 255, 255, 0.03);
+            pointer-events: none;
+            z-index: 5;
+            box-shadow: 0 0 20px var(--accent-glow);
+            border-radius: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .wheel-drum {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            touch-action: none;
+        }
+
+        .wheel-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: var(--item-height);
+            margin-top: calc(var(--item-height) / -2);
+            margin-left: -150px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
+            backface-visibility: hidden;
+            transition: height 0.3s ease, margin 0.3s ease, border-color 0.3s ease;
+        }
+
+        .wheel-item-img {
+            height: var(--img-size);
+            width: auto;
+            max-width: 65px;
+            object-fit: contain;
+            margin-right: 12px;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.75));
+            pointer-events: none;
+            transition: height 0.3s ease;
+        }
+
+        .wheel-item-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px currentColor;
+            flex-shrink: 0;
+        }
+
+        .wheel-item-info {
+            flex: 1;
+            text-align: left;
+            overflow: hidden;
+        }
+
+        .wheel-item-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .wheel-item-sub {
+            font-size: 11px;
+            color: var(--subtext-color);
+            margin-top: 2px;
+        }
+
+        .wheel-item-price {
+            font-size: 15px;
+            font-weight: 800;
+            color: #34d399;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .info-card {
+            margin: 0 16px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .info-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .info-details h3 { 
+            font-size: 15px; 
+            font-weight: 700; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .info-details p { 
+            font-size: 12px; 
+            color: var(--subtext-color); 
+            margin-top: 3px; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-order {
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent-color), #064e3b);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            outline: none;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        body.mode-flavor .btn-order {
+            background: linear-gradient(135deg, var(--accent-color), #0e7490);
+        }
+
+        .btn-order:active { transform: scale(0.95); }
+
+        /* 2. ЭКРАН ПОДТВЕРЖДЕНИЯ (CHECKOUT) */
+        .checkout-section {
+            display: none;
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .preview-card {
+            width: 100%;
+            max-width: 340px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-img {
+            height: 140px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
+            margin-bottom: 12px;
+        }
+
+        .preview-flavor-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .flavor-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .preview-price {
+            font-size: 22px;
+            font-weight: 800;
+            color: #34d399;
+            margin-bottom: 14px;
+        }
+
+        .preview-description {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--subtext-color);
+            padding: 10px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-description strong {
+            color: #fff;
+        }
+
+        .checkout-actions {
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn-back {
+            flex: 1;
+            padding: 14px 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--subtext-color);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-confirm {
+            flex: 1.5;
+            padding: 14px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, #10b981, #064e3b);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:active, .btn-confirm:active {
+            transform: scale(0.96);
+        }
+
+        /* 3. ЭКРАН ВВОДА ДАННЫХ (ФОРМА ДОСТАВКИ) */
+        .form-section {
+            display: none;
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 20px;
+            animation: fadeIn 0.3s ease-in-out;
+            width: 100%;
+            max-width: 360px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            width: 100%;
+            margin-bottom: 12px;
+            text-align: left;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--subtext-color);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-hint {
+            font-size: 11px;
+            color: #10b981;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-glow);
+            background: rgba(255, 255, 255, 0.09);
+        }
+
+        .btn-geo {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            color: #34d399;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-geo:active {
+            transform: scale(0.98);
+            background: rgba(16, 185, 129, 0.25);
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #121824;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            max-height: 160px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+        }
+
+        .autocomplete-item {
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #e5e7eb;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover, .autocomplete-item:active {
+            background: rgba(16, 185, 129, 0.25);
+            color: #fff;
+        }
+
+        .option-toggle {
+            display: flex;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 10px 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            color: var(--subtext-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .option-btn.active {
+            background: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+
+        /* 4. ЭКРАН УСПЕХА */
+        .success-section {
+            display: none;
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #fff;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+            margin-bottom: 16px;
+        }
+
+        .success-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .success-text {
+            font-size: 13px;
+            color: var(--subtext-color);
+            line-height: 1.5;
+            max-width: 280px;
+            margin-bottom: 24px;
+        }
+
+        .btn-close-app {
+            width: 100%;
+            max-width: 280px;
+            padding: 14px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-close-app:active { transform: scale(0.96); }
+    </style>
 </head>
 <body class="mode-model">
 
-    <div class="ambient-light" id="ambientLight"></div>
+    <div class="ambient-light" id="ambientLight"></div>
 
-    <header>
-        <h1 id="pageTitle">Каталог Товаров</h1>
-    </header>
+    <header>
+        <h1 id="pageTitle">Каталог Товаров</h1>
+    </header>
 
-    <!-- 1. СЕКЦИЯ ВЫБОРА С БАРАБАНОМ -->
-    <div class="picker-section" id="pickerSection">
-        <div class="tabs">
-            <div class="tab active" id="tabModel" onclick="switchTab('model')">1. Устройство</div>
-            <div class="tab" id="tabFlavor" onclick="switchTab('flavor')">2. Вкус</div>
-        </div>
+    <!-- 1. СЕКЦИЯ ВЫБОРА С БАРАБАНОМ -->
+    <div class="picker-section" id="pickerSection">
+        <div class="tabs">
+            <div class="tab active" id="tabModel" onclick="switchTab('model')">1. Устройство</div>
+            <div class="tab" id="tabFlavor" onclick="switchTab('flavor')">2. Вкус</div>
+        </div>
 
-        <div class="wheel-wrapper" id="wheelContainer">
-            <div class="wheel-selection-overlay"></div>
-            <div class="wheel-drum" id="wheelDrum"></div>
-        </div>
-    </div>
+        <div class="wheel-wrapper" id="wheelContainer">
+            <div class="wheel-selection-overlay"></div>
+            <div class="wheel-drum" id="wheelDrum"></div>
+        </div>
+    </div>
 
-    <!-- КАРТОЧКА СНИЗУ -->
-    <div class="info-card" id="infoCard">
-        <div class="info-details">
-            <h3 id="summaryTitle">Загрузка...</h3>
-            <p id="summarySub">Выберите параметры</p>
-        </div>
-        <button class="btn-order" id="actionBtn" onclick="handleAction()">Далее</button>
-    </div>
+    <!-- КАРТОЧКА СНИЗУ -->
+    <div class="info-card" id="infoCard">
+        <div class="info-details">
+            <h3 id="summaryTitle">Загрузка...</h3>
+            <p id="summarySub">Выберите параметры</p>
+        </div>
+        <button class="btn-order" id="actionBtn" onclick="handleAction()">Далее</button>
+    </div>
 
-    <!-- 2. СЕКЦИЯ ПОДТВЕРЖДЕНИЯ ЗАКАЗА -->
-    <div class="checkout-section" id="checkoutSection">
-        <div class="preview-card">
-            <img id="checkoutImg" class="preview-img" src="" alt="Device">
-            
-            <div class="preview-flavor-badge">
-                <span class="flavor-dot" id="checkoutFlavorDot"></span>
-                <span id="checkoutFlavorName">Вкус</span>
-            </div>
+    <!-- 2. СЕКЦИЯ ПОДТВЕРЖДЕНИЯ ЗАКАЗА -->
+    <div class="checkout-section" id="checkoutSection">
+        <div class="preview-card">
+            <img id="checkoutImg" class="preview-img" src="" alt="Device">
+            
+            <div class="preview-flavor-badge">
+                <span class="flavor-dot" id="checkoutFlavorDot"></span>
+                <span id="checkoutFlavorName">Вкус</span>
+            </div>
 
-            <div class="preview-price" id="checkoutPrice">0 ₸</div>
+            <div class="preview-price" id="checkoutPrice">0 ₸</div>
 
-            <div class="preview-description" id="checkoutText">
-                Загрузка информации...
-            </div>
-        </div>
+            <div class="preview-description" id="checkoutText">
+                Загрузка информации...
+            </div>
+        </div>
 
-        <div class="checkout-actions">
-            <button class="btn-back" onclick="goBackToPicker()">← Вернуться</button>
-            <button class="btn-confirm" onclick="goToFormPage()">Заказать</button>
-        </div>
-    </div>
+        <div class="checkout-actions">
+            <button class="btn-back" onclick="goBackToPicker()">← Вернуться</button>
+            <button class="btn-confirm" onclick="goToFormPage()">Заказать</button>
+        </div>
+    </div>
 
-    <!-- 3. СЕКЦИЯ ВВОДА КОНТАКТНЫХ ДАННЫХ И ДОСТАВКИ -->
-    <div class="form-section" id="formSection">
-        <div class="form-group">
-            <label>Ваше Имя</label>
-            <input type="text" id="custName" class="form-control" placeholder="Иван" autocomplete="off">
-        </div>
+    <!-- 3. СЕКЦИЯ ВВОДА КОНТАКТНЫХ ДАННЫХ И ДОСТАВКИ -->
+    <div class="form-section" id="formSection">
+        <div class="form-group">
+            <label>Ваше Имя</label>
+            <input type="text" id="custName" class="form-control" placeholder="Иван" autocomplete="off">
+        </div>
 
-        <div class="form-group">
-            <label>Телефон WhatsApp (+7)</label>
-            <input type="tel" id="custPhone" class="form-control" placeholder="+7 (707) 000-00-00" autocomplete="off" value="+7 (">
-            <div class="form-hint">🟢 Курьер совершит WhatsApp-аудиозвонок</div>
-        </div>
+        <div class="form-group">
+            <label>Телефон WhatsApp (+7)</label>
+            <input type="tel" id="custPhone" class="form-control" placeholder="+7 (707) 000-00-00" autocomplete="off" value="+7 (">
+            <div class="form-hint">🟢 Курьер совершит WhatsApp-аудиозвонок</div>
+        </div>
 
-        <div class="form-group">
-            <label>Адрес доставки (Город, улица, дом)</label>
-            <input type="text" id="custAddress" class="form-control" placeholder="Начните вводить адрес или улицу..." autocomplete="off" oninput="handleAddressInput(this.value)">
-            
-            <!-- Живой Автокомплит адресов OSM -->
-            <div class="autocomplete-list" id="addressList"></div>
+        <div class="form-group">
+            <label>Адрес доставки (Город, улица, дом)</label>
+            <input type="text" id="custAddress" class="form-control" placeholder="Начните вводить адрес..." autocomplete="off" oninput="handleAddressInput(this.value)">
+            
+            <div class="autocomplete-list" id="addressList"></div>
 
-            <button type="button" class="btn-geo" onclick="detectLocation()">
-                📍 Определить, где я нахожусь
-            </button>
-        </div>
+            <button type="button" class="btn-geo" onclick="detectLocation()">
+                📍 Определить, где я нахожусь
+            </button>
+        </div>
 
-        <div class="form-group">
-            <label>Способ оплаты (Оплата при получении)</label>
-            <div class="option-toggle">
-                <div class="option-btn active" id="btnPayKaspi" onclick="setPaymentType('kaspi_delivery')">💳 Kaspi QR / Red</div>
-                <div class="option-btn" id="btnPayCash" onclick="setPaymentType('cash_delivery')">💵 Наличными курьеру</div>
-            </div>
-            <div class="form-hint" style="color: #9ca3af; margin-top: 6px;">
-                ℹ️ Оплата производится строго курьеру при получении.
-            </div>
-        </div>
+        <div class="form-group">
+            <label>Способ оплаты</label>
+            <div class="option-toggle">
+                <div class="option-btn active" id="btnPayKaspi" onclick="setPaymentType('kaspi_delivery')">💳 Kaspi QR / Red</div>
+                <div class="option-btn" id="btnPayCash" onclick="setPaymentType('cash_delivery')">💵 Наличными курьеру</div>
+            </div>
+            <div class="form-hint" style="color: #9ca3af; margin-top: 6px;">
+                ℹ️ Оплата производится строго курьеру при получении.
+            </div>
+        </div>
 
-        <div class="form-group">
-            <label>Комментарий курьеру (квартира, подъезд)</label>
-            <input type="text" id="custComment" class="form-control" placeholder="Кв. 12, подъезд 2, домофон..." autocomplete="off">
-        </div>
+        <div class="form-group">
+            <label>Комментарий курьеру (квартира, подъезд)</label>
+            <input type="text" id="custComment" class="form-control" placeholder="Кв. 12, подъезд 2, домофон..." autocomplete="off">
+        </div>
 
-        <div class="checkout-actions" style="margin-top: 10px;">
-            <button class="btn-back" onclick="goBackToCheckout()">← Назад</button>
-            <button class="btn-confirm" onclick="submitFinalOrder()">Подтвердить</button>
-        </div>
-    </div>
+        <div class="checkout-actions" style="margin-top: 10px;">
+            <button class="btn-back" onclick="goBackToCheckout()">← Назад</button>
+            <button class="btn-confirm" onclick="submitFinalOrder()">Подтвердить</button>
+        </div>
+    </div>
 
-    <!-- 4. СЕКЦИЯ УСПЕШНОГО ОФОРМЛЕНИЯ -->
-    <div class="success-section" id="successSection">
-        <div class="success-icon">✓</div>
-        <div class="success-title">Заказ Оформлен!</div>
-        <div class="success-text" id="successDetails">Ваш заказ передан курьеру. Ожидайте WhatsApp-аудиозвонок!</div>
-        <button class="btn-close-app" onclick="closeWebApp()">Закрыть</button>
-    </div>
+    <!-- 4. СЕКЦИЯ УСПЕШНОГО ОФОРМЛЕНИЯ -->
+    <div class="success-section" id="successSection">
+        <div class="success-icon">✓</div>
+        <div class="success-title">Заказ Оформлен!</div>
+        <div class="success-text" id="successDetails">Ваш заказ передан курьеру. Ожидайте WhatsApp-аудиозвонок!</div>
+        <button class="btn-close-app" onclick="closeWebApp()">Закрыть</button>
+    </div>
 
-    <script>
-        const tg = window.Telegram ? window.Telegram.WebApp : null;
-        if (tg) { 
-            tg.expand(); 
-            tg.ready(); 
-        }
+    <script>
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) { 
+            tg.expand(); 
+            tg.ready(); 
+        }
 
-        let catalog = [
-            {
-                "id": "m1",
-                "name": "soPRO-20000",
-                "puffs": "20 000 затяжек",
-                "price": "15 000 ₸",
-                "image": "sopro20000.png",
-                "flavors": [
-                    { "id": "f101", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.4)" },
-                    { "id": "f102", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.4)" },
-                    { "id": "f103", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.4)" },
-                    { "id": "f104", "name": "Киви Маракуйя Гуава с ЧЗ", "color": "#84cc16", "bgGlow": "rgba(132, 204, 22, 0.4)" },
-                    { "id": "f105", "name": "Клубника Арбуз с ЧЗ", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.4)" }
-                ]
-            },
-            {
-                "id": "m2",
-                "name": "PA-10000",
-                "puffs": "10 000 затяжек",
-                "price": "12 000 ₸",
-                "image": "pa10000.png",
-                "flavors": [
-                    { "id": "f201", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.4)" },
-                    { "id": "f202", "name": "Клубника Банан с ЧЗ", "color": "#f59e0b", "bgGlow": "rgba(245, 158, 11, 0.4)" },
-                    { "id": "f203", "name": "Манго Персик с ЧЗ", "color": "#f97316", "bgGlow": "rgba(249, 115, 22, 0.4)" },
-                    { "id": "f204", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.4)" },
-                    { "id": "f205", "name": "Клубника Киви с ЧЗ", "color": "#ec4899", "bgGlow": "rgba(236, 72, 153, 0.4)" },
-                    { "id": "f206", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.4)" }
-                ]
-            },
-            {
-                "id": "m3",
-                "name": "Slim-8000",
-                "puffs": "8 000 затяжек",
-                "price": "8 500 ₸",
-                "image": "slim8000.png",
-                "flavors": [
-                    { "id": "f301", "name": "Клубника Арбуз", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.4)" },
-                    { "id": "f302", "name": "Черника Малина Персик", "color": "#6366f1", "bgGlow": "rgba(99, 102, 241, 0.4)" },
-                    { "id": "f303", "name": "Ананас со льдом", "color": "#eab308", "bgGlow": "rgba(234, 179, 8, 0.4)" }
-                ]
-            }
-        ];
+        let catalog = [
+            {
+                "id": "m1",
+                "name": "soPRO-20000",
+                "puffs": "20 000 затяжек",
+                "price": "15 000 ₸",
+                "image": "sopro20000.png",
+                "flavors": [
+                    { "id": "f101", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.4)" },
+                    { "id": "f102", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.4)" },
+                    { "id": "f103", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.4)" },
+                    { "id": "f104", "name": "Киви Маракуйя Гуава с ЧЗ", "color": "#84cc16", "bgGlow": "rgba(132, 204, 22, 0.4)" },
+                    { "id": "f105", "name": "Клубника Арбуз с ЧЗ", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.4)" }
+                ]
+            },
+            {
+                "id": "m2",
+                "name": "PA-10000",
+                "puffs": "10 000 затяжек",
+                "price": "12 000 ₸",
+                "image": "pa10000.png",
+                "flavors": [
+                    { "id": "f201", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.4)" },
+                    { "id": "f202", "name": "Клубника Банан с ЧЗ", "color": "#f59e0b", "bgGlow": "rgba(245, 158, 11, 0.4)" },
+                    { "id": "f203", "name": "Манго Персик с ЧЗ", "color": "#f97316", "bgGlow": "rgba(249, 115, 22, 0.4)" },
+                    { "id": "f204", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.4)" },
+                    { "id": "f205", "name": "Клубника Киви с ЧЗ", "color": "#ec4899", "bgGlow": "rgba(236, 72, 153, 0.4)" },
+                    { "id": "f206", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.4)" }
+                ]
+            },
+            {
+                "id": "m3",
+                "name": "Slim-8000",
+                "puffs": "8 000 затяжек",
+                "price": "8 500 ₸",
+                "image": "slim8000.png",
+                "flavors": [
+                    { "id": "f301", "name": "Клубника Арбуз", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.4)" },
+                    { "id": "f302", "name": "Черника Малина Персик", "color": "#6366f1", "bgGlow": "rgba(99, 102, 241, 0.4)" },
+                    { "id": "f303", "name": "Ананас со льдом", "color": "#eab308", "bgGlow": "rgba(234, 179, 8, 0.4)" }
+                ]
+            }
+        ];
 
-        let currentTab = 'model';
-        let selectedModelIndex = 0;
-        let selectedFlavorIndex = 0;
-        let paymentType = 'kaspi_delivery';
+        let currentTab = 'model';
+        let selectedModelIndex = 0;
+        let selectedFlavorIndex = 0;
+        let paymentType = 'kaspi_delivery';
 
-        let currentAngle = 0;
-        let startY = 0;
-        let currentY = 0;
-        let isDragging = false;
-        let lastSelectedIndex = -1;
-        let addressTimeout = null;
+        let currentAngle = 0;
+        let startY = 0;
+        let startAngle = 0;
+        let isDragging = false;
+        let lastSelectedIndex = -1;
+        let addressTimeout = null;
 
-        const drum = document.getElementById('wheelDrum');
-        const container = document.getElementById('wheelContainer');
+        const drum = document.getElementById('wheelDrum');
+        const container = document.getElementById('wheelContainer');
 
-        fetch('catalog.json')
-            .then(res => res.json())
-            .then(data => { if (data && data.length) { catalog = data; renderDrum(); } })
-            .catch(() => renderDrum());
+        fetch('catalog.json')
+            .then(res => res.json())
+            .then(data => { if (data && data.length) { catalog = data; renderDrum(); } })
+            .catch(() => renderDrum());
 
-        function triggerHaptic() {
-            if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-        }
+        function triggerHaptic() {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+        }
 
-        function getWheelRadius() {
-            const style = getComputedStyle(document.body);
-            return parseInt(style.getPropertyValue('--wheel-radius')) || 120;
-        }
+        function getWheelRadius() {
+            const style = getComputedStyle(document.body);
+            return parseInt(style.getPropertyValue('--wheel-radius')) || 120;
+        }
 
-        function getAngleStep(itemCount) {
-            return Math.max(30, 360 / Math.max(itemCount, 12));
-        }
+        function getAngleStep(itemCount) {
+            return Math.max(30, 360 / Math.max(itemCount, 12));
+        }
 
-        function renderDrum() {
-            drum.innerHTML = '';
-            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
-            const itemCount = items.length;
-            
-            const angleStep = getAngleStep(itemCount); 
-            const radius = getWheelRadius();
+        function renderDrum() {
+            drum.innerHTML = '';
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            const itemCount = items.length;
+            
+            const angleStep = getAngleStep(itemCount); 
+            const radius = getWheelRadius();
 
-            items.forEach((item, index) => {
-                const el = document.createElement('div');
-                el.className = 'wheel-item';
-                
-                const itemAngle = index * angleStep;
-                el.style.transform = `rotateX(${-itemAngle}deg) translateZ(${radius}px)`;
+            items.forEach((item, index) => {
+                const el = document.createElement('div');
+                el.className = 'wheel-item';
+                
+                const itemAngle = index * angleStep;
+                el.style.transform = `rotateX(${-itemAngle}deg) translateZ(${radius}px)`;
 
-                if (currentTab === 'model') {
-                    const imgHtml = item.image ? `<img class="wheel-item-img" src="${item.image}" alt="${item.name}">` : '';
-                    el.innerHTML = `
-                        ${imgHtml}
-                        <div class="wheel-item-info">
-                            <div class="wheel-item-title">${item.name}</div>
-                            <div class="wheel-item-sub">${item.puffs}</div>
-                        </div>
-                        <div class="wheel-item-price">${item.price}</div>
-                    `;
-                } else {
-                    el.innerHTML = `
-                        <div class="wheel-item-icon" style="background:${item.color}; color:${item.color};"></div>
-                        <div class="wheel-item-info" style="margin-left: 12px;">
-                            <div class="wheel-item-title">${item.name}</div>
-                            <div class="wheel-item-sub">В наличии</div>
-                        </div>
-                    `;
-                }
-                drum.appendChild(el);
-            });
+                if (currentTab === 'model') {
+                    const imgHtml = item.image ? `<img class="wheel-item-img" src="${item.image}" alt="${item.name}">` : '';
+                    el.innerHTML = `
+                        ${imgHtml}
+                        <div class="wheel-item-info">
+                            <div class="wheel-item-title">${item.name}</div>
+                            <div class="wheel-item-sub">${item.puffs}</div>
+                        </div>
+                        <div class="wheel-item-price">${item.price}</div>
+                    `;
+                } else {
+                    el.innerHTML = `
+                        <div class="wheel-item-icon" style="background:${item.color}; color:${item.color};"></div>
+                        <div class="wheel-item-info" style="margin-left: 12px;">
+                            <div class="wheel-item-title">${item.name}</div>
+                            <div class="wheel-item-sub">В наличии</div>
+                        </div>
+                    `;
+                }
+                drum.appendChild(el);
+            });
 
-            const activeIndex = currentTab === 'model' ? selectedModelIndex : selectedFlavorIndex;
-            currentAngle = activeIndex * angleStep;
-            updateDrumTransform();
-        }
+            const activeIndex = currentTab === 'model' ? selectedModelIndex : selectedFlavorIndex;
+            currentAngle = activeIndex * angleStep;
+            updateDrumTransform();
+        }
 
-        function updateDrumTransform() {
-            drum.style.transform = `rotateX(${currentAngle}deg)`;
-            
-            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
-            const angleStep = getAngleStep(items.length);
-            
-            let activeIdx = Math.round(currentAngle / angleStep);
-            activeIdx = Math.max(0, Math.min(activeIdx, items.length - 1));
+        function updateDrumTransform() {
+            drum.style.transform = `rotateX(${currentAngle}deg)`;
+            
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            const angleStep = getAngleStep(items.length);
+            
+            let activeIdx = Math.round(currentAngle / angleStep);
+            activeIdx = Math.max(0, Math.min(activeIdx, items.length - 1));
 
-            if (activeIdx !== lastSelectedIndex) {
-                lastSelectedIndex = activeIdx;
-                triggerHaptic();
+            if (activeIdx !== lastSelectedIndex) {
+                lastSelectedIndex = activeIdx;
+                triggerHaptic();
 
-                if (currentTab === 'model') {
-                    selectedModelIndex = activeIdx;
-                    selectedFlavorIndex = 0;
-                } else {
-                    selectedFlavorIndex = activeIdx;
-                }
-                updateSummary();
-            }
-        }
+                if (currentTab === 'model') {
+                    selectedModelIndex = activeIdx;
+                    selectedFlavorIndex = 0;
+                } else {
+                    selectedFlavorIndex = activeIdx;
+                }
+                updateSummary();
+            }
+        }
 
-        function updateSummary() {
-            const model = catalog[selectedModelIndex];
-            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
+        function updateSummary() {
+            const model = catalog[selectedModelIndex];
+            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
 
-            document.getElementById('summaryTitle').innerText = model.name;
-            document.getElementById('summarySub').innerText = `Вкус: ${flavor.name} • ${model.price}`;
+            document.getElementById('summaryTitle').innerText = model.name;
+            document.getElementById('summarySub').innerText = `Вкус: ${flavor.name} • ${model.price}`;
 
-            if (currentTab === 'flavor' && flavor.color) {
-                document.documentElement.style.setProperty('--accent-color', flavor.color);
-                document.documentElement.style.setProperty('--accent-glow', flavor.bgGlow || 'rgba(0, 242, 254, 0.4)');
-            }
+            if (currentTab === 'flavor' && flavor.color) {
+                document.documentElement.style.setProperty('--accent-color', flavor.color);
+                document.documentElement.style.setProperty('--accent-glow', flavor.bgGlow || 'rgba(0, 242, 254, 0.4)');
+            }
 
-            const btn = document.getElementById('actionBtn');
-            btn.innerText = currentTab === 'model' ? 'Выбрать вкус →' : 'Заказать';
-        }
+            const btn = document.getElementById('actionBtn');
+            btn.innerText = currentTab === 'model' ? 'Выбрать вкус →' : 'Заказать';
+        }
 
-        function switchTab(tab) {
-            triggerHaptic();
-            currentTab = tab;
-            document.body.className = tab === 'model' ? 'mode-model' : 'mode-flavor';
+        function switchTab(tab) {
+            triggerHaptic();
+            currentTab = tab;
+            document.body.className = tab === 'model' ? 'mode-model' : 'mode-flavor';
 
-            document.getElementById('tabModel').classList.toggle('active', tab === 'model');
-            document.getElementById('tabFlavor').classList.toggle('active', tab === 'flavor');
-            lastSelectedIndex = -1;
-            renderDrum();
-        }
+            document.getElementById('tabModel').classList.toggle('active', tab === 'model');
+            document.getElementById('tabFlavor').classList.toggle('active', tab === 'flavor');
+            lastSelectedIndex = -1;
+            renderDrum();
+        }
 
-        function handleAction() {
-            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-            if (currentTab === 'model') {
-                switchTab('flavor');
-            } else {
-                openCheckoutPage();
-            }
-        }
+        function handleAction() {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            if (currentTab === 'model') {
+                switchTab('flavor');
+            } else {
+                openCheckoutPage();
+            }
+        }
 
-        /* 2. ЭКРАН ПРЕДВАРИТЕЛЬНОГО ПРОСМОТРА */
-        function openCheckoutPage() {
-            const model = catalog[selectedModelIndex];
-            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
+        /* ИНТЕРАКТИВНОЕ ВРАЩЕНИЕ БАРАБАНА (TOUCH & MOUSE) */
+        function onPointerDown(e) {
+            isDragging = true;
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+            startAngle = currentAngle;
+            drum.style.transition = 'none';
+        }
 
-            document.getElementById('checkoutImg').src = model.image || '';
-            document.getElementById('checkoutFlavorDot').style.backgroundColor = flavor.color || '#10b981';
-            document.getElementById('checkoutFlavorDot').style.color = flavor.color || '#10b981';
-            document.getElementById('checkoutFlavorName').innerText = flavor.name;
-            document.getElementById('checkoutPrice').innerText = model.price;
+        function onPointerMove(e) {
+            if (!isDragging) return;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+            const deltaY = y - startY;
+            
+            // Чувствительность вращения
+            currentAngle = startAngle - (deltaY * 0.4);
+            updateDrumTransform();
+        }
 
-            document.getElementById('checkoutText').innerHTML = 
-                `Вы выбрали устройство <strong>${model.name}</strong> со вкусом <strong>${flavor.name}</strong> по цене <strong>${model.price}</strong>.`;
+        function onPointerUp() {
+            if (!isDragging) return;
+            isDragging = false;
+            drum.style.transition = 'transform 0.2s ease-out';
+            
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            const angleStep = getAngleStep(items.length);
+            
+            // Фиксация на ближайшем элементе
+            let activeIdx = Math.round(currentAngle / angleStep);
+            activeIdx = Math.max(0, Math.min(activeIdx, items.length - 1));
+            
+            currentAngle = activeIdx * angleStep;
+            updateDrumTransform();
+        }
 
-            document.getElementById('pageTitle').innerText = 'Детали Заказа';
+        container.addEventListener('touchstart', onPointerDown, { passive: true });
+        window.addEventListener('touchmove', onPointerMove, { passive: true });
+        window.addEventListener('touchend', onPointerUp);
 
-            document.getElementById('pickerSection').style.display = 'none';
-            document.getElementById('infoCard').style.display = 'none';
-            document.getElementById('formSection').style.display = 'none';
-            document.getElementById('checkoutSection').style.display = 'flex';
-        }
+        container.addEventListener('mousedown', onPointerDown);
+        window.addEventListener('mousemove', onPointerMove);
+        window.addEventListener('mouseup', onPointerUp);
 
-        function goBackToPicker() {
-            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        /* 2. ЭКРАН ПРЕДВАРИТЕЛЬНОГО ПРОСМОТРА */
+        function openCheckoutPage() {
+            const model = catalog[selectedModelIndex];
+            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
 
-            document.getElementById('pageTitle').innerText = 'Каталог Товаров';
-            document.getElementById('checkoutSection').style.display = 'none';
-            
-            document.getElementById('pickerSection').style.display = 'flex';
-            document.getElementById('infoCard').styl
+            document.getElementById('checkoutImg').src = model.image || '';
+            document.getElementById('checkoutFlavorDot').style.backgroundColor = flavor.color || '#10b981';
+            document.getElementById('checkoutFlavorDot').style.color = flavor.color || '#10b981';
+            document.getElementById('checkoutFlavorName').innerText = flavor.name;
+            document.getElementById('checkoutPrice').innerText = model.price;
+
+            document.getElementById('checkoutText').innerHTML = 
+                `Вы выбрали устройство <strong>${model.name}</strong> со вкусом <strong>${flavor.name}</strong> по цене <strong>${model.price}</strong>.`;
+
+            document.getElementById('pageTitle').innerText = 'Детали Заказа';
+
+            document.getElementById('pickerSection').style.display = 'none';
+            document.getElementById('infoCard').style.display = 'none';
+            document.getElementById('checkoutSection').style.display = 'flex';
+        }
+
+        function goBackToPicker() {
+            document.getElementById('pageTitle').innerText = 'Каталог Товаров';
+            document.getElementById('checkoutSection').style.display = 'none';
+            document.getElementById('pickerSection').style.display = 'flex';
+            document.getElementById('infoCard').style.display = 'flex';
+        }
+
+        function goToFormPage() {
+            document.getElementById('pageTitle').innerText = 'Доставка';
+            document.getElementById('checkoutSection').style.display = 'none';
+            document.getElementById('formSection').style.display = 'flex';
+        }
+
+        function goBackToCheckout() {
+            document.getElementById('pageTitle').innerText = 'Детали Заказа';
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('checkoutSection').style.display = 'flex';
+        }
+
+        function setPaymentType(type) {
+            paymentType = type;
+            document.getElementById('btnPayKaspi').classList.toggle('active', type === 'kaspi_delivery');
+            document.getElementById('btnPayCash').classList.toggle('active', type === 'cash_delivery');
+            triggerHaptic();
+        }
+
+        /* ЛИВЕ АВТОКОМПЛИТ АДРЕСА (OSM NOMINATIM API) */
+        function handleAddressInput(val) {
+            clearTimeout(addressTimeout);
+            const listContainer = document.getElementById('addressList');
+            if (!val || val.length < 3) {
+                listContainer.style.display = 'none';
+                return;
+            }
+
+            addressTimeout = setTimeout(() => {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&limit=5&accept-language=ru`)
+                    .then(res => res.json())
+                    .then(data => {
+                        listContainer.innerHTML = '';
+                        if (data && data.length > 0) {
+                            data.forEach(item => {
+                                const el = document.createElement('div');
+                                el.className = 'autocomplete-item';
+                                el.innerText = item.display_name;
+                                el.onclick = () => {
+                                    document.getElementById('custAddress').value = item.display_name;
+                                    listContainer.style.display = 'none';
+                                };
+                                listContainer.appendChild(el);
+                            });
+                            listContainer.style.display = 'block';
+                        } else {
+                            listContainer.style.display = 'none';
+                        }
+                    })
+                    .catch(() => { listContainer.style.display = 'none'; });
+            }, 400);
+        }
+
+        /* ОПРЕДЕЛЕНИЕ ГЕОЛОКАЦИИ */
+        function detectLocation() {
+            if (!navigator.geolocation) {
+                alert('Геолокация не поддерживается вашим устройством');
+                return;
+            }
+            const btn = document.querySelector('.btn-geo');
+            btn.innerText = '⏳ Определение...';
+
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data && data.display_name) {
+                                document.getElementById('custAddress').value = data.display_name;
+                            }
+                            btn.innerText = '📍 Определить, где я нахожусь';
+                        })
+                        .catch(() => {
+                            btn.innerText = '📍 Определить, где я нахожусь';
+                            alert('Не удалось получить адрес');
+                        });
+                },
+                () => {
+                    btn.innerText = '📍 Определить, где я нахожусь';
+                    alert('Доступ к геолокации запрещен');
+                }
+            );
+        }
+
+        /* 4. ОФОРМЛЕНИЕ И ОТПРАВКА ДАННЫХ */
+        function submitFinalOrder() {
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            const comment = document.getElementById('custComment').value.trim();
+
+            if (!name) { alert('Пожалуйста, укажите ваше имя'); return; }
+            if (phone.length < 10) { alert('Укажите корректный номер телефона'); return; }
+            if (!address) { alert('Укажите адрес доставки'); return; }
+
+            const model = catalog[selectedModelIndex];
+            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
+
+            const orderPayload = {
+                device: model.name,
+                flavor: flavor.name,
+                price: model.price,
+                customer_name: name,
+                customer_phone: phone,
+                address: address,
+                comment: comment,
+                payment_method: paymentType === 'kaspi_delivery' ? 'Kaspi QR/Red' : 'Наличные курьеру'
+            };
+
+            if (tg) {
+                tg.sendData(JSON.stringify(orderPayload));
+            }
+
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('successSection').style.display = 'flex';
+            document.getElementById('pageTitle').innerText = 'Успешно';
+        }
+
+        function closeWebApp() {
+            if (tg) tg.close();
+        }
+    </script>
+</body>
+</html>
