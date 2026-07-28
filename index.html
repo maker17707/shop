@@ -1,879 +1,948 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WAKA Store</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-color: #0d0d0d;
-            --card-bg: #1a1a1a;
-            --accent-color: #ff3b30;
-            --text-color: #ffffff;
-            --text-secondary: #8e8e93;
-            --border-color: #2c2c2e;
-            --input-bg: #2c2c2e;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vape Store Catalog</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #0a0a0c;
+            --accent-color: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.4);
+            --text-color: #f3f4f6;
+            --subtext-color: #9ca3af;
+            --img-size: 64px;
+            --wheel-radius: 140px;
+            --item-height: 68px;
+        }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+        body.mode-model {
+            --bg-color: #0a0a0c;
+            --accent-color: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.4);
+            --img-size: 64px;
+            --wheel-radius: 140px;
+            --item-height: 68px;
+        }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+        body.mode-flavor {
+            --bg-color: #050b14;
+            --accent-color: #00f2fe;
+            --accent-glow: rgba(0, 242, 254, 0.4);
+            --img-size: 42px;
+            --wheel-radius: 100px;
+            --item-height: 50px;
+        }
 
-        /* HEADER */
-        header {
-            padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            background: rgba(26, 26, 26, 0.8);
-            backdrop-filter: blur(10px);
-            z-index: 10;
-        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        header h1 {
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
+        html, body {
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.4s ease;
+        }
 
-        /* TABS */
-        .tabs {
-            display: flex;
-            margin: 10px 15px 0 15px;
-            background: var(--card-bg);
-            border-radius: 10px;
-            padding: 2px;
-            border: 1px solid var(--border-color);
-        }
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            padding-bottom: 24px;
+        }
 
-        .tab-btn {
-            flex: 1;
-            padding: 8px 0;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 13px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+        .ambient-light {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            transition: all 0.5s ease;
+            filter: blur(40px);
+        }
 
-        .tab-btn.active {
-            background: var(--input-bg);
-            color: var(--text-color);
-        }
+        header {
+            position: relative;
+            z-index: 10;
+            padding: 20px 16px 10px;
+            text-align: center;
+        }
 
-        /* MAIN CONTAINER */
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
+        header h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #fff 30%, var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.4s ease;
+        }
 
-        .page {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            width: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            transition: transform 0.3s ease;
-        }
+        /* 1. ЭКРАН ВЫБОРА (БАРАБАН) */
+        .picker-section {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
 
-        /* 3D DRUM CONTAINER */
-        .picker-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            perspective: 1000px;
-            position: relative;
-            overflow: hidden;
-        }
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
 
-        .selection-highlight {
-            position: absolute;
-            width: 85%;
-            height: 50px;
-            border-top: 1px solid rgba(255, 59, 48, 0.5);
-            border-bottom: 1px solid rgba(255, 59, 48, 0.5);
-            background: rgba(255, 59, 48, 0.05);
-            pointer-events: none;
-            border-radius: 8px;
-            z-index: 1;
-        }
+        .tab {
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 10px;
+            color: var(--subtext-color);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
 
-        .drum {
-            width: 85%;
-            height: 50px;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.1s ease-out;
-        }
+        .tab.active {
+            background: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 3px 12px var(--accent-glow);
+        }
 
-        .drum-item {
-            position: absolute;
-            width: 100%;
-            height: 50px;
-            line-height: 50px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: 600;
-            backface-visibility: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
+        .wheel-wrapper {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            perspective: 900px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+        }
 
-        .stock-tag {
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background: #2c2c2e;
-            color: #8e8e93;
-        }
+        .wheel-wrapper:active { cursor: grabbing; }
 
-        .stock-tag.low {
-            background: rgba(255, 149, 0, 0.2);
-            color: #ff9500;
-        }
+        .wheel-selection-overlay {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            right: 5%;
+            transform: translateY(-50%);
+            height: calc(var(--item-height) + 6px);
+            border-top: 1.5px solid var(--accent-color);
+            border-bottom: 1.5px solid var(--accent-color);
+            background: rgba(255, 255, 255, 0.03);
+            pointer-events: none;
+            z-index: 5;
+            box-shadow: 0 0 20px var(--accent-glow);
+            border-radius: 14px;
+            transition: all 0.3s ease;
+        }
 
-        .stock-tag.out {
-            background: rgba(255, 59, 48, 0.2);
-            color: #ff3b30;
-        }
+        .wheel-drum {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            touch-action: none;
+        }
 
-        /* INFO CARD */
-        .info-card {
-            background: var(--card-bg);
-            border-top: 1px solid var(--border-color);
-            padding: 20px;
-            border-radius: 20px 20px 0 0;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            z-index: 5;
-        }
+        .wheel-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: var(--item-height);
+            margin-top: calc(var(--item-height) / -2);
+            margin-left: -150px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
+            backface-visibility: hidden;
+            transition: height 0.3s ease, margin 0.3s ease, border-color 0.3s ease;
+        }
 
-        .price-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .wheel-item-img {
+            height: var(--img-size);
+            width: auto;
+            max-width: 65px;
+            object-fit: contain;
+            margin-right: 12px;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.75));
+            pointer-events: none;
+            transition: height 0.3s ease;
+        }
 
-        .price-title {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
+        .wheel-item-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px currentColor;
+            flex-shrink: 0;
+        }
 
-        .price-value {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--accent-color);
-        }
+        .wheel-item-info {
+            flex: 1;
+            text-align: left;
+            overflow: hidden;
+        }
 
-        .btn-primary {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: opacity 0.2s;
-        }
+        .wheel-item-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .wheel-item-sub {
+            font-size: 11px;
+            color: var(--subtext-color);
+            margin-top: 2px;
+        }
 
-        .btn-secondary {
-            background: var(--input-bg);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-        }
+        .wheel-item-price {
+            font-size: 15px;
+            font-weight: 800;
+            color: #34d399;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
 
-        /* FORM ELEMENTS */
-        .form-section {
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        .info-card {
+            margin: 0 16px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+        }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            position: relative;
-        }
+        .info-details {
+            flex: 1;
+            min-width: 0;
+        }
 
-        .form-group label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        .info-details h3 { 
+            font-size: 15px; 
+            font-weight: 700; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-        .form-group input, .form-group textarea {
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 15px;
-            outline: none;
-        }
+        .info-details p { 
+            font-size: 12px; 
+            color: var(--subtext-color); 
+            margin-top: 3px; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-        .form-group textarea {
-            resize: none;
-            height: 70px;
-        }
+        .btn-order {
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent-color), #064e3b);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            outline: none;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
 
-        .btn-geo {
-            background: transparent;
-            border: none;
-            color: var(--accent-color);
-            font-size: 13px;
-            font-weight: 600;
-            text-align: left;
-            padding: 4px 0;
-            cursor: pointer;
-        }
+        body.mode-flavor .btn-order {
+            background: linear-gradient(135deg, var(--accent-color), #0e7490);
+        }
 
-        /* AUTOCOMPLETE LIST */
-        .autocomplete-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            max-height: 150px;
-            overflow-y: auto;
-            z-index: 20;
-            display: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        }
+        .btn-order:active { transform: scale(0.95); }
 
-        .autocomplete-item {
-            padding: 10px 12px;
-            font-size: 13px;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-        }
+        /* 2. ЭКРАН ПОДТВЕРЖДЕНИЯ (CHECKOUT) */
+        .checkout-section {
+            display: none;
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
 
-        .autocomplete-item:last-child {
-            border-bottom: none;
-        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* PAYMENT TYPE TOGGLE */
-        .payment-toggle {
-            display: flex;
-            gap: 10px;
-        }
+        .preview-card {
+            width: 100%;
+            max-width: 340px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-        .pay-btn {
-            flex: 1;
-            padding: 12px;
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-        }
+        .preview-img {
+            height: 140px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
+            margin-bottom: 12px;
+        }
 
-        .pay-btn.active {
-            border-color: var(--accent-color);
-            color: var(--text-color);
-            background: rgba(255, 59, 48, 0.1);
-        }
+        .preview-flavor-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
 
-        /* CHECKOUT SUMMARY */
-        .order-summary {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 10px;
-        }
+        .flavor-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            box-shadow: 0 0 8px currentColor;
+        }
 
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
+        .preview-price {
+            font-size: 22px;
+            font-weight: 800;
+            color: #34d399;
+            margin-bottom: 14px;
+        }
 
-        .summary-item:last-child {
-            margin-bottom: 0;
-            padding-top: 8px;
-            border-top: 1px solid var(--border-color);
-            font-weight: 700;
-        }
+        .preview-description {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--subtext-color);
+            padding: 10px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        }
 
-        /* LOADER & SUCCESS */
-        .center-screen {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            text-align: center;
-            gap: 15px;
-        }
+        .preview-description strong {
+            color: #fff;
+        }
 
-        .icon-large {
-            font-size: 60px;
-        }
+        .checkout-actions {
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
 
-        .loader {
-            border: 3px solid var(--border-color);
-            border-top: 3px solid var(--accent-color);
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            animation: spin 0.8s linear infinite;
-        }
+        .btn-back {
+            flex: 1;
+            padding: 14px 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--subtext-color);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+        .btn-confirm {
+            flex: 1.5;
+            padding: 14px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, #10b981, #064e3b);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:active, .btn-confirm:active {
+            transform: scale(0.96);
+        }
+
+        /* 3. ЭКРАН ВВОДА ДАННЫХ (ФОРМА ДОСТАВКИ) */
+        .form-section {
+            display: none;
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 20px;
+            animation: fadeIn 0.3s ease-in-out;
+            width: 100%;
+            max-width: 360px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            width: 100%;
+            margin-bottom: 12px;
+            text-align: left;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--subtext-color);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-hint {
+            font-size: 11px;
+            color: #10b981;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-glow);
+            background: rgba(255, 255, 255, 0.09);
+        }
+
+        /* КНОПКА ГЕОЛОКАЦИИ */
+        .btn-geo {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            color: #34d399;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-geo:active {
+            transform: scale(0.98);
+            background: rgba(16, 185, 129, 0.25);
+        }
+
+        /* АВТОКОМПЛИТ ДЛЯ АДРЕСА */
+        .autocomplete-list {
+            position: absolute;
+            top: calc(100% - 35px);
+            left: 0;
+            right: 0;
+            background: #121824;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            max-height: 160px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+        }
+
+        .autocomplete-item {
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #e5e7eb;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover, .autocomplete-item:active {
+            background: rgba(16, 185, 129, 0.25);
+            color: #fff;
+        }
+
+        .option-toggle {
+            display: flex;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 10px 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            color: var(--subtext-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .option-btn.active {
+            background: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+
+        /* 4. ЭКРАН УСПЕХА */
+        .success-section {
+            display: none;
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #fff;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+            margin-bottom: 16px;
+        }
+
+        .success-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .success-text {
+            font-size: 13px;
+            color: var(--subtext-color);
+            line-height: 1.5;
+            max-width: 280px;
+            margin-bottom: 24px;
+        }
+
+        .btn-close-app {
+            width: 100%;
+            max-width: 280px;
+            padding: 14px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-close-app:active { transform: scale(0.96); }
+    </style>
 </head>
-<body>
-
-    <header>
-        <h1 id="pageTitle">WAKA Express</h1>
-    </header>
-
-    <main>
-        <!-- СТРАНИЦА КАТАЛОГА / БАРАБАНА -->
-        <div id="catalogPage" class="page">
-            <div class="tabs">
-                <button class="tab-btn active" id="tabModel" onclick="switchTab('model')">1. Модель</button>
-                <button class="tab-btn" id="tabFlavor" onclick="switchTab('flavor')">2. Вкус</button>
-            </div>
-
-            <div class="picker-container" id="pickerContainer">
-                <div class="selection-highlight"></div>
-                <div class="drum" id="drum"></div>
-            </div>
-
-            <div class="info-card" id="infoCard">
-                <div class="price-row">
-                    <span class="price-title">Стоимость:</span>
-                    <span class="price-value" id="priceDisplay">0 ₸</span>
-                </div>
-                <button class="btn-primary" id="actionBtn" onclick="handleMainAction()">Выбрать вкус</button>
-            </div>
-        </div>
-
-        <!-- СТРАНИЦА ОФОРМЛЕНИЯ (ДАННЫЕ ДОСТАВКИ) -->
-        <div id="formSection" class="page" style="display: none;">
-            <div class="form-section">
-                <div class="order-summary">
-                    <div class="summary-item">
-                        <span>Товар:</span>
-                        <span id="summaryModel">-</span>
-                    </div>
-                    <div class="summary-item">
-                        <span>Вкус:</span>
-                        <span id="summaryFlavor">-</span>
-                    </div>
-                    <div class="summary-item">
-                        <span>К оплате:</span>
-                        <span id="summaryPrice">0 ₸</span>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Ваше Имя</label>
-                    <input type="text" id="custName" placeholder="Иван">
-                </div>
-
-                <div class="form-group">
-                    <label>Телефон (WhatsApp)</label>
-                    <input type="tel" id="custPhone" placeholder="+7 700 000 0000">
-                </div>
-
-                <div class="form-group">
-                    <label>Адрес Доставки</label>
-                    <input type="text" id="custAddress" placeholder="Улица, дом, квартира" oninput="handleAddressInput(this.value)">
-                    <button class="btn-geo" onclick="detectLocation()">📍 Определить, где я нахожусь</button>
-                    <div class="autocomplete-list" id="addressList"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>Способ Оплаты</label>
-                    <div class="payment-toggle">
-                        <div class="pay-btn active" id="btnPayKaspi" onclick="setPaymentType('kaspi_delivery')">Kaspi QR / Red</div>
-                        <div class="pay-btn" id="btnPayCash" onclick="setPaymentType('cash_delivery')">Наличными</div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Комментарий к заказу</label>
-                    <textarea id="custComment" placeholder="Подъезд, код двери или пожелания..."></textarea>
-                </div>
-
-                <button class="btn-primary" onclick="submitFinalOrder()">Подтвердить и Заказать</button>
-                <button class="btn-secondary" onclick="goBackToCatalog()">← Назад к выбору</button>
-            </div>
-        </div>
-
-        <!-- СТРАНИЦА УСПЕХА -->
-        <div id="successSection" class="page" style="display: none;">
-            <div class="center-screen">
-                <div class="icon-large">✅</div>
-                <h2>Заказ принят!</h2>
-                <p style="color: var(--text-secondary); font-size: 14px;">Менеджер свяжется с вами в течение нескольких минут для подтверждения.</p>
-                <button class="btn-primary" onclick="closeWebApp()" style="margin-top: 20px;">Завершить</button>
-            </div>
-        </div>
-
-        <!-- ЭКРАН ЗАГРУЗКИ (Заменяет статический массив) -->
-        <div id="loaderSection" class="page">
-            <div class="center-screen">
-                <div class="loader"></div>
-                <p style="color: var(--text-secondary); font-size: 14px; margin-top: 10px;">Загрузка каталога...</p>
-            </div>
-        </div>
-    </main>
-
-    <script>
-        // Инициализация Telegram WebApp
-        const tg = window.Telegram ? window.Telegram.WebApp : null;
-        if (tg) {
-            tg.expand();
-            tg.ready();
-        }
-
-        // Глобальное состояние каталога (загружается с сервера)
-        let catalog = [];
-
-        let currentTab = 'model'; // 'model' или 'flavor'
-        let selectedModelIndex = 0;
-        let selectedFlavorIndex = 0;
-        let paymentType = 'kaspi_delivery';
-        let addressTimeout = null;
-
-        // Элементы барабана
-        const drum = document.getElementById('drum');
-        const container = document.getElementById('pickerContainer');
-
-        let startY = 0;
-        let currentY = 0;
-        let isDragging = false;
-        let currentAngle = 0;
-
-        // Загрузка данных каталога и остатков из базы через сервер
-        async function loadCatalogData() {
-            try {
-                const response = await fetch('/api/catalog');
-                if (!response.ok) throw new Error('Ошибка сети');
-                catalog = await response.json();
-                
-                document.getElementById('loaderSection').style.display = 'none';
-                renderDrum();
-                updateUI();
-            } catch (error) {
-                console.error('Ошибка загрузки каталога:', error);
-                alert('Не удалось загрузить каталог. Попробуйте позже.');
-            }
-        }
-
-        function triggerHaptic() {
-            if (tg && tg.HapticFeedback) {
-                tg.HapticFeedback.selectionChanged();
-            }
-        }
-
-        function getAngleStep(count) {
-            return count > 0 ? 360 / Math.max(count, 8) : 45;
-        }
-
-        /* ОТРИСОВКА БАРАБАНА */
-        function renderDrum() {
-            drum.innerHTML = '';
-            if (!catalog.length) return;
-
-            const items = currentTab === 'model' 
-                ? catalog 
-                : catalog[selectedModelIndex].flavors;
-
-            const count = items.length;
-            const angleStep = getAngleStep(count);
-            const radius = 120; // Радиус вращения барабана
-
-            items.forEach((item, i) => {
-                const el = document.createElement('div');
-                el.className = 'drum-item';
-                
-                // Расчет угла для 3D вращения
-                const angle = i * angleStep;
-                el.style.transform = `rotateX(${-angle}deg) translateZ(${radius}px)`;
-
-                let stockText = '';
-                let stockClass = '';
-                
-                if (currentTab === 'model') {
-                    const totalStock = item.flavors.reduce((acc, f) => acc + f.stock, 0);
-                    stockText = totalStock > 0 ? `${totalStock} шт` : 'Нет';
-                    if (totalStock === 0) stockClass = 'out';
-                    else if (totalStock <= 3) stockClass = 'low';
-                } else {
-                    const stock = item.stock;
-                    stockText = stock > 0 ? `${stock} шт` : 'Нет';
-                    if (stock === 0) stockClass = 'out';
-                    else if (stock <= 2) stockClass = 'low';
-                }
-
-                el.innerHTML = `
-                    <span>${item.name}</span>
-                    <span class="stock-tag ${stockClass}">${stockText}</span>
-                `;
-                drum.appendChild(el);
-            });
-
-            currentAngle = (currentTab === 'model' ? selectedModelIndex : selectedFlavorIndex) * angleStep;
-            updateDrumTransform();
-        }
-
-        function updateDrumTransform() {
-            drum.style.transform = `rotateX(${currentAngle}deg)`;
-            
-            // Вычисление текущего выбранного индекса
-            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
-            if (!items.length) return;
-
-            const angleStep = getAngleStep(items.length);
-            let index = Math.round(currentAngle / angleStep) % items.length;
-            if (index < 0) index += items.length;
-
-            if (currentTab === 'model' && index !== selectedModelIndex) {
-                selectedModelIndex = index;
-                selectedFlavorIndex = 0; // Сброс вкуса при смене модели
-                triggerHaptic();
-                updateUI();
-            } else if (currentTab === 'flavor' && index !== selectedFlavorIndex) {
-                selectedFlavorIndex = index;
-                triggerHaptic();
-                updateUI();
-            }
-        }
-
-        function updateUI() {
-            if (!catalog.length) return;
-
-            const model = catalog[selectedModelIndex];
-            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
-
-            document.getElementById('priceDisplay').innerText = `${model.price.toLocaleString()} ₸`;
-
-            const actionBtn = document.getElementById('actionBtn');
-            if (currentTab === 'model') {
-                actionBtn.innerText = 'Выбрать вкус';
-                actionBtn.disabled = false;
-            } else {
-                if (!flavor || flavor.stock <= 0) {
-                    actionBtn.innerText = 'Нет в наличии';
-                    actionBtn.disabled = true;
-                } else {
-                    actionBtn.innerText = 'Оформить заказ';
-                    actionBtn.disabled = false;
-                }
-            }
-        }
-
-        /* ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК */
-        function switchTab(tab) {
-            if (currentTab === tab) return;
-            currentTab = tab;
-
-            document.getElementById('tabModel').classList.toggle('active', tab === 'model');
-            document.getElementById('tabFlavor').classList.toggle('active', tab === 'flavor');
-
-            renderDrum();
-            updateUI();
-        }
-
-        function handleMainAction() {
-            if (currentTab === 'model') {
-                switchTab('flavor');
-            } else {
-                goToFormPage();
-            }
-        }
-
-        /* ПЕРЕХОД К ФОРМЕ ДОСТАВКИ */
-        function goToFormPage() {
-            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-
-            const model = catalog[selectedModelIndex];
-            const flavor = model.flavors[selectedFlavorIndex];
-
-            document.getElementById('summaryModel').innerText = model.name;
-            document.getElementById('summaryFlavor').innerText = flavor.name;
-            document.getElementById('summaryPrice').innerText = `${model.price.toLocaleString()} ₸`;
-
-            document.getElementById('pageTitle').innerText = 'Данные Доставки';
-            document.getElementById('catalogPage').style.display = 'none';
-            document.getElementById('formSection').style.display = 'flex';
-
-            // Автозаполнение имени из данных Telegram
-            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                const u = tg.initDataUnsafe.user;
-                const nameInput = document.getElementById('custName');
-                if (!nameInput.value) {
-                    nameInput.value = `${u.first_name || ''} ${u.last_name || ''}`.trim();
-                }
-            }
-        }
-
-        function goBackToCatalog() {
-            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-            document.getElementById('pageTitle').innerText = 'WAKA Express';
-            document.getElementById('formSection').style.display = 'none';
-            document.getElementById('catalogPage').style.display = 'flex';
-        }
-
-        /* ТИП ОПЛАТЫ */
-        function setPaymentType(type) {
-            paymentType = type;
-            document.getElementById('btnPayKaspi').classList.toggle('active', type === 'kaspi_delivery');
-            document.getElementById('btnPayCash').classList.toggle('active', type === 'cash_delivery');
-            triggerHaptic();
-        }
-
-        /* ГЕОЛОКАЦИЯ И OSM АВТОКОМПЛИТ */
-        function detectLocation() {
-            if (!navigator.geolocation) {
-                alert('Геолокация не поддерживается вашим устройством');
-                return;
-            }
-
-            const btn = document.querySelector('.btn-geo');
-            btn.innerText = '⌛ Определение адреса...';
-
-            navigator.geolocation.getCurrentPosition(
-                async (pos) => {
-                    const lat = pos.coords.latitude;
-                    const lon = pos.coords.longitude;
-
-                    try {
-                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ru`);
-                        const data = await res.json();
-                        
-                        if (data && data.display_name) {
-                            document.getElementById('custAddress').value = data.display_name;
-                        } else {
-                            document.getElementById('custAddress').value = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-                        }
-                    } catch (e) {
-                        document.getElementById('custAddress').value = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-                    } finally {
-                        btn.innerHTML = '📍 Определить, где я нахожусь';
-                    }
-                },
-                (err) => {
-                    alert('Не удалось получить геопозицию. Введите адрес вручную.');
-                    btn.innerHTML = '📍 Определить, где я нахожусь';
-                },
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
-        }
-
-        function handleAddressInput(val) {
-            clearTimeout(addressTimeout);
-            const listContainer = document.getElementById('addressList');
-            
-            if (!val || val.length < 3) {
-                listContainer.style.display = 'none';
-                return;
-            }
-
-            addressTimeout = setTimeout(async () => {
-                try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&limit=5&accept-language=ru`);
-                    const data = await res.json();
-
-                    if (data && data.length > 0) {
-                        listContainer.innerHTML = '';
-                        data.forEach(item => {
-                            const div = document.createElement('div');
-                            div.className = 'autocomplete-item';
-                            div.innerText = item.display_name;
-                            div.onclick = () => {
-                                document.getElementById('custAddress').value = item.display_name;
-                                listContainer.style.display = 'none';
-                            };
-                            listContainer.appendChild(div);
-                        });
-                        listContainer.style.display = 'block';
-                    } else {
-                        listContainer.style.display = 'none';
-                    }
-                } catch (e) {
-                    listContainer.style.display = 'none';
-                }
-            }, 400);
-        }
-
-        /* ОТПРАВКА ЗАКАЗА */
-        async function submitFinalOrder() {
-            const name = document.getElementById('custName').value.trim();
-            const phone = document.getElementById('custPhone').value.trim();
-            const address = document.getElementById('custAddress').value.trim();
-            const comment = document.getElementById('custComment').value.trim();
-
-            if (!name) {
-                alert('Пожалуйста, укажите ваше имя');
-                return;
-            }
-            if (!phone || phone.length < 10) {
-                alert('Введите корректный номер телефона');
-                return;
-            }
-            if (!address) {
-                alert('Укажите адрес доставки');
-                return;
-            }
-
-            const model = catalog[selectedModelIndex];
-            const flavor = model.flavors[selectedFlavorIndex];
-
-            const orderPayload = {
-                model: model.name,
-                flavor: flavor.name,
-                price: model.price,
-                customer: {
-                    name,
-                    phone,
-                    address,
-                    comment,
-                    payment: paymentType === 'kaspi_delivery' ? 'Kaspi QR / Red' : 'Наличными'
-                },
-                initData: tg ? tg.initData : ''
-            };
-
-            try {
-                if (tg && tg.sendData) {
-                    tg.sendData(JSON.stringify(orderPayload));
-                }
-            } catch (e) {
-                console.log('Ошибка отправки tg.sendData:', e);
-            }
-
-            document.getElementById('pageTitle').innerText = 'Заказ Успешен';
-            document.getElementById('formSection').style.display = 'none';
-            document.getElementById('successSection').style.display = 'flex';
-        }
-
-        function closeWebApp() {
-            if (tg) {
-                tg.close();
-            } else {
-                window.location.reload();
-            }
-        }
-
-        /* ОБРАБОТКА СВАЙПОВ И ЖЕСТОВ БАРАБАНА */
-        function onTouchStart(e) {
-            isDragging = true;
-            startY = e.touches ? e.touches[0].clientY : e.clientY;
-        }
-
-        function onTouchMove(e) {
-            if (!isDragging) return;
-            currentY = e.touches ? e.touches[0].clientY : e.clientY;
-            const deltaY = startY - currentY;
-            startY = currentY;
-
-            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
-            if (!items.length) return;
-
-            const angleStep = getAngleStep(items.length);
-            
-            currentAngle += deltaY * 0.4;
-            
-            const maxAngle = (items.length - 1) * angleStep;
-            if (currentAngle < 0) currentAngle = 0;
-            if (currentAngle > maxAngle) currentAngle = maxAngle;
-
-            updateDrumTransform();
-        }
-
-        function onTouchEnd() {
-            if (!isDragging) return;
-            isDragging = false;
-
-            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
-            if (!items.length) return;
-
-            const angleStep = getAngleStep(items.length);
-            const targetIndex = Math.round(currentAngle / angleStep);
-            
-            currentAngle = targetIndex * angleStep;
-            drum.style.transition = 'transform 0.2s ease-out';
-            updateDrumTransform();
-
-            setTimeout(() => {
-                drum.style.transition = 'transform 0.1s ease-out';
-            }, 200);
-        }
-
-        container.addEventListener('touchstart', onTouchStart, { passive: true });
-        container.addEventListener('touchmove', onTouchMove, { passive: true });
-        container.addEventListener('touchend', onTouchEnd);
-
-        container.addEventListener('mousedown', onTouchStart);
-        window.addEventListener('mousemove', onTouchMove);
-        window.addEventListener('mouseup', onTouchEnd);
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.form-group')) {
-                document.getElementById('addressList').style.display = 'none';
-            }
-        });
-
-        // Запуск загрузки каталога при загрузке страницы
-        window.addEventListener('DOMContentLoaded', loadCatalogData);
-    </script>
-</body>
-</html>
+<body class="mode-model">
+
+    <div class="ambient-light" id="ambientLight"></div>
+
+    <header>
+        <h1 id="pageTitle">Каталог Товаров</h1>
+    </header>
+
+    <!-- 1. СЕКЦИЯ ВЫБОРА С БАРАБАНОМ -->
+    <div class="picker-section" id="pickerSection">
+        <div class="tabs">
+            <div class="tab active" id="tabModel" onclick="switchTab('model')">1. Устройство</div>
+            <div class="tab" id="tabFlavor" onclick="switchTab('flavor')">2. Вкус</div>
+        </div>
+
+        <div class="wheel-wrapper" id="wheelContainer">
+            <div class="wheel-selection-overlay"></div>
+            <div class="wheel-drum" id="wheelDrum"></div>
+        </div>
+    </div>
+
+    <!-- КАРТОЧКА СНИЗУ -->
+    <div class="info-card" id="infoCard">
+        <div class="info-details">
+            <h3 id="summaryTitle">Загрузка...</h3>
+            <p id="summarySub">Выберите параметры</p>
+        </div>
+        <button class="btn-order" id="actionBtn" onclick="handleAction()">Далее</button>
+    </div>
+
+    <!-- 2. СЕКЦИЯ ПОДТВЕРЖДЕНИЯ ЗАКАЗА -->
+    <div class="checkout-section" id="checkoutSection">
+        <div class="preview-card">
+            <img id="checkoutImg" class="preview-img" src="" alt="Device">
+            
+            <div class="preview-flavor-badge">
+                <span class="flavor-dot" id="checkoutFlavorDot"></span>
+                <span id="checkoutFlavorName">Вкус</span>
+            </div>
+
+            <div class="preview-price" id="checkoutPrice">0 ₸</div>
+
+            <div class="preview-description" id="checkoutText">
+                Загрузка информации...
+            </div>
+        </div>
+
+        <div class="checkout-actions">
+            <button class="btn-back" onclick="goBackToPicker()">← Вернуться</button>
+            <button class="btn-confirm" onclick="goToFormPage()">Заказать</button>
+        </div>
+    </div>
+
+    <!-- 3. СЕКЦИЯ ВВОДА КОНТАКТНЫХ ДАННЫХ И ДОСТАВКИ -->
+    <div class="form-section" id="formSection">
+        <div class="form-group">
+            <label>Ваше Имя</label>
+            <input type="text" id="custName" class="form-control" placeholder="Иван" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+            <label>Телефон WhatsApp (+7)</label>
+            <input type="tel" id="custPhone" class="form-control" placeholder="+7 (707) 000-00-00" autocomplete="off" value="+7 (">
+            <div class="form-hint">🟢 Курьер совершит WhatsApp-аудиозвонок</div>
+        </div>
+
+        <div class="form-group">
+            <label>Адрес доставки (Город, улица, дом)</label>
+            <input type="text" id="custAddress" class="form-control" placeholder="Начните вводить адрес или улицу..." autocomplete="off" oninput="handleAddressInput(this.value)">
+            
+            <!-- Живой Автокомплит адресов OSM -->
+            <div class="autocomplete-list" id="addressList"></div>
+
+            <button type="button" class="btn-geo" onclick="detectLocation()">
+                📍 Определить, где я нахожусь
+            </button>
+        </div>
+
+        <div class="form-group">
+            <label>Способ оплаты (Оплата при получении)</label>
+            <div class="option-toggle">
+                <div class="option-btn active" id="btnPayKaspi" onclick="setPaymentType('kaspi_delivery')">💳 Kaspi QR / Red</div>
+                <div class="option-btn" id="btnPayCash" onclick="setPaymentType('cash_delivery')">💵 Наличными курьеру</div>
+            </div>
+            <div class="form-hint" style="color: #9ca3af; margin-top: 6px;">
+                ℹ️ Оплата производится строго курьеру при получении.
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Комментарий курьеру (квартира, подъезд)</label>
+            <input type="text" id="custComment" class="form-control" placeholder="Кв. 12, подъезд 2, домофон..." autocomplete="off">
+        </div>
+
+        <div class="checkout-actions" style="margin-top: 10px;">
+            <button class="btn-back" onclick="goBackToCheckout()">← Назад</button>
+            <button class="btn-confirm" onclick="submitFinalOrder()">Подтвердить</button>
+        </div>
+    </div>
+
+    <!-- 4. СЕКЦИЯ УСПЕШНОГО ОФОРМЛЕНИЯ -->
+    <div class="success-section" id="successSection">
+        <div class="success-icon">✓</div>
+        <div class="success-title">Заказ Оформлен!</div>
+        <div class="success-text" id="successDetails">Ваш заказ передан курьеру. Ожидайте WhatsApp-аудиозвонок!</div>
+        <button class="btn-close-app" onclick="closeWebApp()">Закрыть</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) { 
+            tg.expand(); 
+            tg.ready(); 
+        }
+
+        let catalog = [
+            {
+                "id": "m1",
+                "name": "soPRO-20000",
+                "puffs": "20 000 затяжек",
+                "price": "15 000 ₸",
+                "image": "sopro20000.png",
+                "flavors": [
+                    { "id": "f101", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.4)" },
+                    { "id": "f102", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.4)" },
+                    { "id": "f103", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.4)" },
+                    { "id": "f104", "name": "Киви Маракуйя Гуава с ЧЗ", "color": "#84cc16", "bgGlow": "rgba(132, 204, 22, 0.4)" },
+                    { "id": "f105", "name": "Клубника Арбуз с ЧЗ", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.4)" }
+                ]
+            },
+            {
+                "id": "m2",
+                "name": "PA-10000",
+                "puffs": "10 000 затяжек",
+                "price": "12 000 ₸",
+                "image": "pa10000.png",
+                "flavors": [
+                    { "id": "f201", "name": "Арбуз с ЧЗ", "color": "#ef4444", "bgGlow": "rgba(239, 68, 68, 0.4)" },
+                    { "id": "f202", "name": "Клубника Банан с ЧЗ", "color": "#f59e0b", "bgGlow": "rgba(245, 158, 11, 0.4)" },
+                    { "id": "f203", "name": "Манго Персик с ЧЗ", "color": "#f97316", "bgGlow": "rgba(249, 115, 22, 0.4)" },
+                    { "id": "f204", "name": "Черника Малина с ЧЗ", "color": "#3b82f6", "bgGlow": "rgba(59, 130, 246, 0.4)" },
+                    { "id": "f205", "name": "Клубника Киви с ЧЗ", "color": "#ec4899", "bgGlow": "rgba(236, 72, 153, 0.4)" },
+                    { "id": "f206", "name": "Мята с ЧЗ", "color": "#10b981", "bgGlow": "rgba(16, 185, 129, 0.4)" }
+                ]
+            },
+            {
+                "id": "m3",
+                "name": "Slim-8000",
+                "puffs": "8 000 затяжек",
+                "price": "8 500 ₸",
+                "image": "slim8000.png",
+                "flavors": [
+                    { "id": "f301", "name": "Клубника Арбуз", "color": "#f43f5e", "bgGlow": "rgba(244, 63, 94, 0.4)" },
+                    { "id": "f302", "name": "Черника Малина Персик", "color": "#6366f1", "bgGlow": "rgba(99, 102, 241, 0.4)" },
+                    { "id": "f303", "name": "Ананас со льдом", "color": "#eab308", "bgGlow": "rgba(234, 179, 8, 0.4)" }
+                ]
+            }
+        ];
+
+        let currentTab = 'model';
+        let selectedModelIndex = 0;
+        let selectedFlavorIndex = 0;
+        let paymentType = 'kaspi_delivery';
+
+        let currentAngle = 0;
+        let startY = 0;
+        let currentY = 0;
+        let isDragging = false;
+        let lastSelectedIndex = -1;
+        let addressTimeout = null;
+
+        const drum = document.getElementById('wheelDrum');
+        const container = document.getElementById('wheelContainer');
+
+        fetch('catalog.json')
+            .then(res => res.json())
+            .then(data => { if (data && data.length) { catalog = data; renderDrum(); } })
+            .catch(() => renderDrum());
+
+        function triggerHaptic() {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+        }
+
+        function getWheelRadius() {
+            const style = getComputedStyle(document.body);
+            return parseInt(style.getPropertyValue('--wheel-radius')) || 120;
+        }
+
+        function getAngleStep(itemCount) {
+            return Math.max(30, 360 / Math.max(itemCount, 12));
+        }
+
+        function renderDrum() {
+            drum.innerHTML = '';
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            const itemCount = items.length;
+            
+            const angleStep = getAngleStep(itemCount); 
+            const radius = getWheelRadius();
+
+            items.forEach((item, index) => {
+                const el = document.createElement('div');
+                el.className = 'wheel-item';
+                
+                const itemAngle = index * angleStep;
+                el.style.transform = `rotateX(${-itemAngle}deg) translateZ(${radius}px)`;
+
+                if (currentTab === 'model') {
+                    const imgHtml = item.image ? `<img class="wheel-item-img" src="${item.image}" alt="${item.name}">` : '';
+                    el.innerHTML = `
+                        ${imgHtml}
+                        <div class="wheel-item-info">
+                            <div class="wheel-item-title">${item.name}</div>
+                            <div class="wheel-item-sub">${item.puffs}</div>
+                        </div>
+                        <div class="wheel-item-price">${item.price}</div>
+                    `;
+                } else {
+                    el.innerHTML = `
+                        <div class="wheel-item-icon" style="background:${item.color}; color:${item.color};"></div>
+                        <div class="wheel-item-info" style="margin-left: 12px;">
+                            <div class="wheel-item-title">${item.name}</div>
+                            <div class="wheel-item-sub">В наличии</div>
+                        </div>
+                    `;
+                }
+                drum.appendChild(el);
+            });
+
+            const activeIndex = currentTab === 'model' ? selectedModelIndex : selectedFlavorIndex;
+            currentAngle = activeIndex * angleStep;
+            updateDrumTransform();
+        }
+
+        function updateDrumTransform() {
+            drum.style.transform = `rotateX(${currentAngle}deg)`;
+            
+            const items = currentTab === 'model' ? catalog : catalog[selectedModelIndex].flavors;
+            const angleStep = getAngleStep(items.length);
+            
+            let activeIdx = Math.round(currentAngle / angleStep);
+            activeIdx = Math.max(0, Math.min(activeIdx, items.length - 1));
+
+            if (activeIdx !== lastSelectedIndex) {
+                lastSelectedIndex = activeIdx;
+                triggerHaptic();
+
+                if (currentTab === 'model') {
+                    selectedModelIndex = activeIdx;
+                    selectedFlavorIndex = 0;
+                } else {
+                    selectedFlavorIndex = activeIdx;
+                }
+                updateSummary();
+            }
+        }
+
+        function updateSummary() {
+            const model = catalog[selectedModelIndex];
+            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
+
+            document.getElementById('summaryTitle').innerText = model.name;
+            document.getElementById('summarySub').innerText = `Вкус: ${flavor.name} • ${model.price}`;
+
+            if (currentTab === 'flavor' && flavor.color) {
+                document.documentElement.style.setProperty('--accent-color', flavor.color);
+                document.documentElement.style.setProperty('--accent-glow', flavor.bgGlow || 'rgba(0, 242, 254, 0.4)');
+            }
+
+            const btn = document.getElementById('actionBtn');
+            btn.innerText = currentTab === 'model' ? 'Выбрать вкус →' : 'Заказать';
+        }
+
+        function switchTab(tab) {
+            triggerHaptic();
+            currentTab = tab;
+            document.body.className = tab === 'model' ? 'mode-model' : 'mode-flavor';
+
+            document.getElementById('tabModel').classList.toggle('active', tab === 'model');
+            document.getElementById('tabFlavor').classList.toggle('active', tab === 'flavor');
+            lastSelectedIndex = -1;
+            renderDrum();
+        }
+
+        function handleAction() {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            if (currentTab === 'model') {
+                switchTab('flavor');
+            } else {
+                openCheckoutPage();
+            }
+        }
+
+        /* 2. ЭКРАН ПРЕДВАРИТЕЛЬНОГО ПРОСМОТРА */
+        function openCheckoutPage() {
+            const model = catalog[selectedModelIndex];
+            const flavor = model.flavors[selectedFlavorIndex] || model.flavors[0];
+
+            document.getElementById('checkoutImg').src = model.image || '';
+            document.getElementById('checkoutFlavorDot').style.backgroundColor = flavor.color || '#10b981';
+            document.getElementById('checkoutFlavorDot').style.color = flavor.color || '#10b981';
+            document.getElementById('checkoutFlavorName').innerText = flavor.name;
+            document.getElementById('checkoutPrice').innerText = model.price;
+
+            document.getElementById('checkoutText').innerHTML = 
+                `Вы выбрали устройство <strong>${model.name}</strong> со вкусом <strong>${flavor.name}</strong> по цене <strong>${model.price}</strong>.`;
+
+            document.getElementById('pageTitle').innerText = 'Детали Заказа';
+
+            document.getElementById('pickerSection').style.display = 'none';
+            document.getElementById('infoCard').style.display = 'none';
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('checkoutSection').style.display = 'flex';
+        }
+
+        function goBackToPicker() {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+
+            document.getElementById('pageTitle').innerText = 'Каталог Товаров';
+            document.getElementById('checkoutSection').style.display = 'none';
+            
+            document.getElementById('pickerSection').style.display = 'flex';
+            document.getElementById('infoCard').styl
