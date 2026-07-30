@@ -53,10 +53,10 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
-        /* 3D Drum / Wheel Selector for Flavors */
+        /* 3D Drum / Wheel Selector */
         .wheel-wrapper {
             position: relative;
-            height: 180px;
+            height: 160px;
             perspective: 1000px;
             margin: 10px 0;
             display: flex;
@@ -64,13 +64,12 @@
             align-items: center;
         }
 
-        /* Gradient Fades for Depth */
         .wheel-wrapper::before,
         .wheel-wrapper::after {
             content: '';
             position: absolute;
             left: 0; right: 0;
-            height: 55px;
+            height: 50px;
             z-index: 5;
             pointer-events: none;
         }
@@ -83,13 +82,12 @@
             background: linear-gradient(to top, var(--card-bg), rgba(26, 26, 30, 0));
         }
 
-        /* Center selection indicator highlight */
         .wheel-indicator {
             position: absolute;
             top: 50%;
             left: 0; right: 0;
             transform: translateY(-50%);
-            height: 42px;
+            height: 40px;
             background: rgba(108, 92, 231, 0.12);
             border-top: 1px solid var(--accent);
             border-bottom: 1px solid var(--accent);
@@ -105,7 +103,7 @@
             scroll-snap-type: y mandatory;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            padding: 70px 0;
+            padding: 60px 0;
             position: relative;
             z-index: 3;
             text-align: center;
@@ -115,7 +113,7 @@
         }
 
         .wheel-item {
-            height: 42px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -178,143 +176,160 @@
         .btn:active {
             transform: scale(0.98);
         }
-        
-        /* Catalog grid */
-        .catalog-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 10px;
+
+        .page {
+            display: none;
         }
-        .catalog-item {
-            background: #222228;
+        .page.active {
+            display: block;
+        }
+
+        .summary-box {
+            background: rgba(108, 92, 231, 0.08);
+            border: 1px solid rgba(108, 92, 231, 0.2);
             border-radius: 12px;
             padding: 12px;
-            text-align: center;
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s;
+            margin-bottom: 16px;
+            font-size: 14px;
         }
-        .catalog-item.selected {
-            border-color: var(--accent);
-            background: rgba(108, 92, 231, 0.1);
-        }
-        .catalog-item h3 {
-            font-size: 15px;
-            margin-bottom: 4px;
-            color: #fff;
-        }
-        .catalog-item p {
-            font-size: 13px;
-            color: var(--tg-theme-hint-color);
+        .summary-box span {
+            color: var(--accent);
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
 
     <h1>Razki_bot Store</h1>
-    
-    <!-- Каталог устройств -->
-    <div class="section">
-        <h2>Выберите модель</h2>
-        <div class="catalog-grid" id="catalogGrid">
-            <!-- Динамически заполняется -->
-        </div>
-    </div>
 
-    <!-- Блок выбора вкусов с 3D-барабаном -->
-    <div class="section" id="flavorSection" style="display:none;">
-        <h2>Выберите вкус</h2>
-        <div class="wheel-wrapper">
-            <div class="wheel-indicator"></div>
-            <div class="wheel-container" id="wheelContainer">
-                <!-- Вкусы подгружаются динамически -->
+    <!-- СТРАНИЦА 1: Выбор модели и вкуса через барабаны -->
+    <div id="pageSelection" class="page active">
+        <div class="section">
+            <h2>Выберите модель</h2>
+            <div class="wheel-wrapper">
+                <div class="wheel-indicator"></div>
+                <div class="wheel-container" id="deviceWheel">
+                    <!-- Заполняется динамически -->
+                </div>
             </div>
         </div>
+
+        <div class="section">
+            <h2>Выберите вкус</h2>
+            <div class="wheel-wrapper">
+                <div class="wheel-indicator"></div>
+                <div class="wheel-container" id="flavorWheel">
+                    <!-- Заполняется динамически -->
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn" id="goToOrderBtn">Далее к оформлению</button>
     </div>
 
-    <!-- Форма заказа -->
-    <div class="section" id="orderSection" style="display:none;">
-        <h2>Оформление заказа</h2>
-        <form id="orderForm">
-            <label>Имя получателя</label>
-            <input type="text" id="nameInput" placeholder="Ваше имя" required>
+    <!-- СТРАНИЦА 2: Оформление заказа -->
+    <div id="pageOrder" class="page">
+        <div class="section">
+            <h2>Ваш выбор</h2>
+            <div class="summary-box" id="orderSummaryText">
+                Модель: <span id="sumModel">-</span><br>
+                Цена: <span id="sumPrice">-</span><br>
+                Вкус: <span id="sumFlavor">-</span>
+            </div>
 
-            <label style="margin-top: 12px; display:block;">Телефон (WhatsApp)</label>
-            <input type="tel" id="phoneInput" placeholder="+7 (___) ___-__-__" required>
+            <h2>Оформление заказа</h2>
+            <form id="orderForm">
+                <label>Имя получателя</label>
+                <input type="text" id="nameInput" placeholder="Ваше имя" required>
 
-            <label style="margin-top: 12px; display:block;">Адрес доставки</label>
-            <input type="text" id="addressInput" placeholder="Улица, дом, квартира" required>
+                <label style="margin-top: 12px; display:block;">Телефон (WhatsApp)</label>
+                <input type="tel" id="phoneInput" placeholder="+7 (___) ___-__-__" required>
 
-            <button type="submit" class="btn">Подтвердить заказ</button>
-        </form>
+                <label style="margin-top: 12px; display:block;">Адрес доставки</label>
+                <input type="text" id="addressInput" placeholder="Улица, дом, квартира" required>
+
+                <button type="submit" class="btn">Подтвердить заказ</button>
+            </form>
+            
+            <button type="button" class="btn" id="backToSelectionBtn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); box-shadow: none; margin-top: 8px;">Назад к выбору</button>
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Данные каталога (или подгрузка с /api/catalog)
+        // Данные каталога
         const catalogData = [
             { id: 'soPRO-20000', name: 'soPRO 20000', price: '6500 ₸', flavors: ['Мхохито', 'Клубничный лед', 'Арбузная жвачка', 'Двойное яблоко', 'Виноградный энергетик', 'Лесные ягоды'] },
             { id: 'PA-10000', name: 'PA 10000', price: '4800 ₸', flavors: ['Черника малина', 'Манго персик', 'Кока-кола', 'Холодная мята', 'Банановый смузи'] },
             { id: 'SLIM-8000', name: 'SLIM 8000', price: '4000 ₸', flavors: ['Киви маракуйя', 'Ананас кокос', 'Вишня лед', 'Энергетик'] }
         ];
 
-        let selectedDevice = null;
-        let selectedFlavor = null;
+        let selectedDevice = catalogData[0];
+        let selectedFlavor = catalogData[0].flavors[0];
 
-        const catalogGrid = document.getElementById('catalogGrid');
-        const flavorSection = document.getElementById('flavorSection');
-        const wheelContainer = document.getElementById('wheelContainer');
-        const orderSection = document.getElementById('orderSection');
+        const deviceWheel = document.getElementById('deviceWheel');
+        const flavorWheel = document.getElementById('flavorWheel');
+        
+        const pageSelection = document.getElementById('pageSelection');
+        const pageOrder = document.getElementById('pageOrder');
 
-        function renderCatalog() {
-            catalogGrid.innerHTML = '';
-            catalogData.forEach(device => {
-                const div = document.createElement('div');
-                div.className = `catalog-item ${selectedDevice?.id === device.id ? 'selected' : ''}`;
-                div.innerHTML = `<h3>${device.name}</h3><p>${device.price}</p>`;
-                div.onclick = () => selectDevice(device);
-                catalogGrid.appendChild(div);
+        // Инициализация барабана моделей
+        function renderDeviceWheel() {
+            deviceWheel.innerHTML = '';
+            catalogData.forEach((device, index) => {
+                const item = document.createElement('div');
+                item.className = 'wheel-item';
+                item.textContent = `${device.name} (${device.price})`;
+                item.onclick = () => {
+                    deviceWheel.scrollTo({ top: index * 40, behavior: 'smooth' });
+                };
+                deviceWheel.appendChild(item);
             });
+            updateDeviceActiveState();
         }
 
-        function selectDevice(device) {
-            selectedDevice = device;
-            renderCatalog();
-            flavorSection.style.display = 'block';
-            renderWheel(device.flavors);
-            if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-        }
-
-        function renderWheel(flavors) {
-            wheelContainer.innerHTML = '';
-
+        // Инициализация барабана вкусов для выбранной модели
+        function renderFlavorWheel(flavors) {
+            flavorWheel.innerHTML = '';
             flavors.forEach((flavor, index) => {
                 const item = document.createElement('div');
                 item.className = 'wheel-item';
                 item.textContent = flavor;
-                item.dataset.index = index;
                 item.onclick = () => {
-                    wheelContainer.scrollTo({
-                        top: index * 42,
-                        behavior: 'smooth'
-                    });
+                    flavorWheel.scrollTo({ top: index * 40, behavior: 'smooth' });
                 };
-                wheelContainer.appendChild(item);
+                flavorWheel.appendChild(item);
             });
-
-            selectedFlavor = flavors[0];
-            updateWheelActiveState();
+            updateFlavorActiveState();
         }
 
-        function updateWheelActiveState() {
-            const scrollTop = wheelContainer.scrollTop;
-            const itemHeight = 42;
-            const index = Math.round(scrollTop / itemHeight);
+        // Обновление активной модели
+        function updateDeviceActiveState() {
+            const scrollTop = deviceWheel.scrollTop;
+            const index = Math.round(scrollTop / 40);
+            const items = deviceWheel.querySelectorAll('.wheel-item');
             
-            const items = wheelContainer.querySelectorAll('.wheel-item');
+            items.forEach((item, idx) => {
+                if (idx === index) {
+                    item.classList.add('active');
+                    if (selectedDevice !== catalogData[idx]) {
+                        selectedDevice = catalogData[idx];
+                        renderFlavorWheel(selectedDevice.flavors); // Перезагружаем вкусы при смене модели
+                    }
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // Обновление активного вкуса
+        function updateFlavorActiveState() {
+            const scrollTop = flavorWheel.scrollTop;
+            const index = Math.round(scrollTop / 40);
+            const items = flavorWheel.querySelectorAll('.wheel-item');
+            
             items.forEach((item, idx) => {
                 if (idx === index) {
                     item.classList.add('active');
@@ -325,23 +340,43 @@
             });
         }
 
-        wheelContainer.addEventListener('scroll', () => {
-            updateWheelActiveState();
+        deviceWheel.addEventListener('scroll', updateDeviceActiveState);
+        flavorWheel.addEventListener('scroll', updateFlavorActiveState);
+
+        // Вибрация при завершении скролла
+        deviceWheel.addEventListener('touchend', () => {
+            setTimeout(() => { if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); }, 100);
+        });
+        flavorWheel.addEventListener('touchend', () => {
+            setTimeout(() => { if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); }, 100);
         });
 
-        wheelContainer.addEventListener('touchend', () => {
-            setTimeout(() => {
-                if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-                orderSection.style.display = 'block';
-            }, 100);
-        });
+        // Переход на страницу заказа
+        document.getElementById('goToOrderBtn').onclick = () => {
+            document.getElementById('sumModel').textContent = selectedDevice.name;
+            document.getElementById('sumPrice').textContent = selectedDevice.price;
+            document.getElementById('sumFlavor').textContent = selectedFlavor;
 
-        // Автозаполнение имени из Телеграма
+            pageSelection.classList.remove('active');
+            pageOrder.classList.add('active');
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            window.scrollTo(0, 0);
+        };
+
+        // Возврат к выбору
+        document.getElementById('backToSelectionBtn').onclick = () => {
+            pageOrder.classList.remove('active');
+            pageSelection.classList.add('active');
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            window.scrollTo(0, 0);
+        };
+
+        // Автозаполнение имени
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             document.getElementById('nameInput').value = tg.initDataUnsafe.user.first_name || '';
         }
 
-        // Отправка формы на сервер
+        // Отправка формы заказа на бэкенд
         document.getElementById('orderForm').onsubmit = (e) => {
             e.preventDefault();
             const orderData = {
@@ -367,7 +402,9 @@
             });
         };
 
-        renderCatalog();
+        // Первичный запуск
+        renderDeviceWheel();
+        renderFlavorWheel(selectedDevice.flavors);
     </script>
 </body>
 </html>
