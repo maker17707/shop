@@ -87,15 +87,15 @@
         /* 3D Карусель / Барабан */
         .swiper {
             width: 100%;
-            padding-top: 20px;
-            padding-bottom: 40px;
+            padding-top: 10px;
+            padding-bottom: 30px;
         }
 
         .swiper-slide {
             background-position: center;
             background-size: cover;
             width: 260px;
-            height: 350px;
+            height: 380px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -115,32 +115,41 @@
         }
 
         .device-card img {
-            width: 170px;
-            height: 210px;
+            width: 160px;
+            height: 190px;
             object-fit: contain;
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
             transition: transform 0.3s ease;
         }
 
         .swiper-slide-active .device-card img {
-            transform: scale(1.08);
+            transform: scale(1.06);
         }
 
         .device-title {
-            margin-top: 15px;
-            font-size: 20px;
+            margin-top: 12px;
+            font-size: 19px;
             font-weight: 700;
             text-align: center;
         }
 
         .device-puffs {
             margin-top: 4px;
-            font-size: 13px;
+            font-size: 12px;
             color: #00f3ff;
             background: rgba(0, 243, 255, 0.1);
-            padding: 4px 10px;
-            border-radius: 10px;
+            padding: 3px 8px;
+            border-radius: 8px;
             font-weight: 600;
+        }
+
+        /* Стиль динамической цены */
+        .device-price {
+            margin-top: 8px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #39ff14;
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
         }
 
         /* Неоновый элемент под барабаном */
@@ -151,7 +160,7 @@
             background: var(--neon-color);
             box-shadow: 0 0 25px 8px var(--neon-glow), 0 0 50px 15px var(--neon-glow);
             transition: background 0.5s ease, box-shadow 0.5s ease;
-            margin-top: -20px;
+            margin-top: -10px;
             z-index: 2;
         }
 
@@ -264,12 +273,13 @@
             tg.ready();
         }
 
-        // Данные товаров (с точными именами картинок из вашей папки и количеством затяжек)
+        // Данные товаров (включая поле price для динамической загрузки из БД)
         const catalogData = [
             {
                 id: 'sopro20000',
                 name: 'Vaka SoPro',
                 puffs: '20000 затяжек',
+                price: '0 ₸', // Динамическая цена (позже будет подтягиваться с сервера/БД)
                 image: 'sopro20000.png',
                 flavors: [
                     { name: 'Прохладная Мята', icon: '🌿', color: '#00f3ff', glow: 'rgba(0, 243, 255, 0.8)' },
@@ -283,6 +293,7 @@
                 id: 'pa10000',
                 name: 'Vaka PA',
                 puffs: '10000 затяжек',
+                price: '0 ₸',
                 image: 'pa10000.png',
                 flavors: [
                     { name: 'Лесные Ягоды', icon: '🫐', color: '#9d00ff', glow: 'rgba(157, 0, 255, 0.8)' },
@@ -295,6 +306,7 @@
                 id: 'slim8000',
                 name: 'Vaka Slim',
                 puffs: '8000 затяжек',
+                price: '0 ₸',
                 image: 'slim8000.png',
                 flavors: [
                     { name: 'Вишня Лёд', icon: '🍒', color: '#dc143c', glow: 'rgba(220, 20, 60, 0.8)' },
@@ -318,6 +330,7 @@
                         <img src="${dev.image}" alt="${dev.name}">
                         <div class="device-title">${dev.name}</div>
                         <div class="device-puffs">${dev.puffs}</div>
+                        <div class="device-price">${dev.price}</div>
                     </div>
                 </div>
             `).join('');
@@ -400,7 +413,7 @@
             const activeIndex = deviceSwiper.activeIndex;
             selectedDevice = catalogData[activeIndex];
             
-            document.getElementById('step-subtitle').innerText = `${selectedDevice.name} (${selectedDevice.puffs})`;
+            document.getElementById('step-subtitle').innerText = `${selectedDevice.name} (${selectedDevice.puffs}) — ${selectedDevice.price}`;
             document.getElementById('step-device').classList.remove('active');
             document.getElementById('step-flavor').classList.add('active');
 
@@ -419,7 +432,7 @@
             const activeFlavorIndex = flavorSwiper.activeIndex;
             selectedFlavor = selectedDevice.flavors[activeFlavorIndex];
 
-            alert(`Выбрано:\n📦 ${selectedDevice.name} — ${selectedDevice.puffs}\n🎨 Вкус: ${selectedFlavor.name}`);
+            alert(`Выбрано:\n📦 ${selectedDevice.name} (${selectedDevice.puffs})\n💰 Цена: ${selectedDevice.price}\n🎨 Вкус: ${selectedFlavor.name}`);
         }
 
         renderDevices();
