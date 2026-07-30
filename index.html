@@ -34,7 +34,6 @@
             padding: 15px 0;
         }
 
-        /* Двужильный неон: РАЗКИ розовый, КОСТАНАЙ голубой */
         header {
             text-align: center;
             z-index: 10;
@@ -293,7 +292,6 @@
             line-height: 1.2;
         }
 
-        /* Выпадающий список подсказок адресов */
         .address-suggestions {
             position: absolute;
             top: 100%;
@@ -344,15 +342,41 @@
             background: rgba(0, 243, 255, 0.25);
         }
 
-        .payment-notice {
-            background: rgba(0, 243, 255, 0.05);
-            border: 1px dashed rgba(0, 243, 255, 0.3);
-            border-radius: 12px;
-            padding: 10px 14px;
-            font-size: 12px;
-            color: #00f3ff;
+        /* Крупный стильный блок оплаты */
+        .payment-notice-large {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.15), rgba(0, 102, 255, 0.1));
+            border: 2px solid var(--neon-blue);
+            border-radius: 16px;
+            padding: 14px;
+            font-size: 15px;
+            color: #fff;
             text-align: center;
-            font-weight: 600;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        /* Информационный блок выбранного товара перед оформлением */
+        .order-summary-box {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #d0d0e0;
+            line-height: 1.4;
+        }
+
+        .order-summary-box span {
+            color: var(--neon-blue);
+            font-weight: 700;
+        }
+
+        .order-summary-box .summary-price {
+            color: #39ff14;
+            font-weight: 800;
         }
 
         .btn-action {
@@ -379,6 +403,54 @@
         .btn-action:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+        }
+
+        /* Кнопки на финальном экране успеха */
+        .btn-success-primary {
+            background: linear-gradient(135deg, #00f3ff, #0066ff);
+            color: #fff;
+        }
+
+        .btn-success-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+        }
+
+        .btn-success-danger {
+            background: rgba(255, 0, 127, 0.15);
+            border: 1px solid rgba(255, 0, 127, 0.4);
+            color: #ff4797;
+        }
+
+        .success-container {
+            width: 90%;
+            max-width: 340px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .success-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .success-card h3 {
+            font-size: 20px;
+            color: #39ff14;
+            margin-bottom: 10px;
+        }
+
+        .success-card p {
+            font-size: 14px;
+            color: #c0c0d0;
+            line-height: 1.5;
         }
 
         .btn-back {
@@ -446,6 +518,11 @@
             <button class="btn-back" onclick="goBackToFlavors()">← Назад к вкусам</button>
             
             <div class="order-form-container">
+                <!-- Блок с информацией о выбранном товаре -->
+                <div class="order-summary-box" id="order-summary-text">
+                    Вы выбрали: <span>Загрузка...</span>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">Введите ваше имя</label>
                     <input type="text" id="cust-name" placeholder="Например, Алексей">
@@ -463,7 +540,7 @@
                         </select>
                         <input type="tel" id="cust-phone" placeholder="(705) 123-45-67" maxlength="15">
                     </div>
-                    <span class="form-hint">Курьер свяжется с вами посредством аудиозвонка на WhatsApp. Указывайте зарегистрированный номер.</span>
+                    <span class="form-hint">Курьер свяжется с вами посредством аудиозвонка на WhatsApp.</span>
                 </div>
 
                 <div class="form-group">
@@ -479,12 +556,26 @@
                     <input type="text" id="cust-comment" placeholder="Подъезд, этаж, домофон">
                 </div>
 
-                <div class="payment-notice">
-                    💵 Оплата исключительно наличными при получении
+                <div class="payment-notice-large">
+                    💵 Оплата наличными при получении
                 </div>
             </div>
 
             <button class="btn-action" id="submit-btn" onclick="submitOrder()">Оформить заказ</button>
+        </div>
+
+        <!-- ШАГ 4: УСПЕШНОЕ ОФОРМЛЕНИЕ (ФИНАЛЬНЫЙ ЭКРАН) -->
+        <div class="step" id="step-success">
+            <div class="success-container">
+                <div class="success-card">
+                    <h3>Заказ успешно оформлен!</h3>
+                    <p id="success-details-text">Вы успешно заказали устройство...</p>
+                </div>
+
+                <button class="btn-action btn-success-primary" onclick="resetToCatalog()">Выбрать ещё устройство</button>
+                <button class="btn-action btn-success-secondary" onclick="closeWebApp()">Завершить (выйти)</button>
+                <button class="btn-action btn-success-danger" onclick="requestCancelOrder()">Попросить об отмене заказа</button>
+            </div>
         </div>
     </div>
 
@@ -521,6 +612,7 @@
         let catalogData = [];
         let selectedDevice = null;
         let selectedFlavor = null;
+        let createdOrderId = null;
         let deviceSwiper = null;
         let flavorSwiper = null;
         let searchTimeout = null;
@@ -637,7 +729,6 @@
             else phoneInput.placeholder = "123-456-789";
         }
 
-        // Живой геопоиск улиц/микрорайонов в Костанае через OpenStreetMap Nominatim
         function handleAddressInput() {
             const input = document.getElementById('cust-address');
             const suggestionsBox = document.getElementById('address-suggestions');
@@ -651,10 +742,8 @@
                 return;
             }
 
-            // Задержка 300мс, чтобы не слать запросы на каждый символ при быстром наборе
             searchTimeout = setTimeout(async () => {
                 try {
-                    // Ищем по запросу с привязкой к Костанаю (город + область)
                     const searchQuery = encodeURIComponent(`${query}, Костанай, Казахстан`);
                     const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${searchQuery}&countrycodes=kz&limit=5&accept-language=ru`);
                     const data = await response.json();
@@ -679,7 +768,6 @@
             document.getElementById('address-suggestions').style.display = 'none';
         }
 
-        // Автоопределение геолокации по GPS устройства
         function requestGeolocation() {
             if (!navigator.geolocation) {
                 alert('Геолокация не поддерживается вашим устройством');
@@ -728,6 +816,14 @@
 
         function confirmFlavor() {
             selectedFlavor = selectedDevice.flavors[flavorSwiper.activeIndex];
+            
+            // Заполняем информационный блок выбранного товара перед оформлением
+            document.getElementById('order-summary-text').innerHTML = `
+                Устройство: <span>${selectedDevice.name}</span><br>
+                Вкус: <span>${selectedFlavor.name}</span><br>
+                Цена: <span class="summary-price">${selectedDevice.price}</span>
+            `;
+
             document.getElementById('step-subtitle').innerText = 'Оформление заказа';
             document.getElementById('step-flavor').classList.remove('active');
             document.getElementById('step-order').classList.add('active');
@@ -785,8 +881,20 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    alert(`✅ Заказ #${result.order_id} успешно оформлен! Ожидайте аудиозвонок курьера на WhatsApp.`);
-                    if (tg) tg.close();
+                    createdOrderId = result.order_id;
+
+                    // Переходим на экран успеха
+                    document.getElementById('step-subtitle').innerText = `Заказ #${createdOrderId} оформлен`;
+                    document.getElementById('step-order').classList.remove('active');
+                    document.getElementById('step-success').classList.add('active');
+
+                    // Заполняем текст успеха
+                    document.getElementById('success-details-text').innerHTML = `
+                        Вы успешно заказали устройство <b>${selectedDevice.name}</b> (${selectedFlavor.name}) за <b>${selectedDevice.price}</b>.<br><br>Ожидайте аудиозвонок курьера на WhatsApp.
+                    `;
+
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Оформить заказ';
                 } else {
                     alert('Ошибка при оформлении заказа. Попробуйте еще раз.');
                     submitBtn.disabled = false;
@@ -797,6 +905,40 @@
                 alert('Ошибка соединения с сервером.');
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'Оформление заказа';
+            }
+        }
+
+        function resetToCatalog() {
+            createdOrderId = null;
+            document.getElementById('step-subtitle').innerText = 'Шаг 1: Выберите устройство';
+            document.getElementById('step-success').classList.remove('active');
+            document.getElementById('step-device').classList.add('active');
+            loadCatalog();
+        }
+
+        function closeWebApp() {
+            if (tg) tg.close();
+            else window.close();
+        }
+
+        async function requestCancelOrder() {
+            if (!createdOrderId) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/orders/cancel-request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order_id: createdOrderId })
+                });
+
+                if (response.ok) {
+                    alert('📨 Запрос на отмену заказа отправлен администратору. Он свяжется с вами.');
+                } else {
+                    alert('Не удалось отправить запрос. Попробуйте написать админу напрямую.');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Ошибка соединения с сервером.');
             }
         }
 
