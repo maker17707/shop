@@ -3,122 +3,340 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Магазин</title>
+    <title>Магазин Vaka</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 15px; color: #333; }
-        h1 { text-align: center; font-size: 22px; }
-        .product-card { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .product-card h3 { margin: 0 0 10px 0; }
-        select, input { width: 100%; padding: 10px; margin-top: 8px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { background: #2ea6ff; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        button:active { background: #1a88e0; }
-        #cart-section { background: #fff; padding: 15px; border-radius: 10px; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--tg-theme-bg-color, #f4f4f9);
+            color: var(--tg-theme-text-color, #222);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .step-card {
+            background: var(--tg-theme-secondary-bg-color, #ffffff);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .step-card.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Стиль "барабана" для выбора устройств */
+        .slot-machine {
+            background: #1e1e24;
+            border-radius: 12px;
+            padding: 15px;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px solid #2ea6ff;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot-display {
+            font-size: 20px;
+            font-weight: bold;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .slot-price {
+            font-size: 16px;
+            color: #4cd137;
+            margin-bottom: 15px;
+        }
+
+        .slot-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .slot-btn {
+            flex: 1;
+            background: #2ea6ff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .slot-btn:active { background: #1a88e0; }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 15px;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #222);
+        }
+
+        .main-btn {
+            background: #2ea6ff;
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .main-btn:active { background: #1a88e0; }
+
+        .secondary-btn {
+            background: #718093;
+            margin-top: 8px;
+        }
+
+        .summary-box {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2ea6ff;
+            margin-bottom: 15px;
+            text-align: center;
+            background: rgba(46, 166, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🛍️ Каталог товаров</h1>
-    <div id="catalog-container">Загрузка каталога...</div>
+    <div class="container">
+        <h1>🛍️ Магазин Vaka</h1>
 
-    <div id="cart-section">
-        <h3>🛒 Оформление заказа</h3>
-        <input type="text" id="cust-name" placeholder="Ваше Имя">
-        <input type="text" id="cust-phone" placeholder="Телефон WhatsApp (например, +7700...)">
-        <input type="text" id="cust-address" placeholder="Адрес доставки">
-        <input type="text" id="cust-comment" placeholder="Комментарий к заказу (необязательно)">
-        
-        <p><strong>Итого: <span id="total-price">0</span> ₸</strong></p>
-        <button onclick="submitOrder()">Отправить заказ</button>
+        <!-- ШАГ 1: Барабан выбора устройства -->
+        <div id="step-device" class="step-card active">
+            <h2>🎰 Выбор устройства</h2>
+            
+            <div class="slot-machine">
+                <div style="font-size: 12px; color: #aaa; margin-bottom: 5px;">ПРОКРУТИТЕ ДЛЯ ВЫБОРА</div>
+                <div id="slot-item-name" class="slot-display">Загрузка...</div>
+                <div id="slot-item-price" class="slot-price">0 ₸</div>
+                
+                <div class="slot-controls">
+                    <button class="slot-btn" onclick="prevDevice()">⬅️ Назад</button>
+                    <button class="slot-btn" onclick="nextDevice()">Вперед ➡️</button>
+                </div>
+            </div>
+
+            <button class="main-btn" onclick="confirmDevice()">Выбрать это устройство</button>
+        </div>
+
+        <!-- ШАГ 2: Выбор вкуса -->
+        <div id="step-flavor" class="step-card">
+            <h2>🍏 Выбор вкуса</h2>
+            <div id="selected-device-info" class="summary-box"></div>
+
+            <label for="flavor-select">Доступные вкусы:</label>
+            <select id="flavor-select"></select>
+
+            <label for="qty-input">Количество:</label>
+            <input type="number" id="qty-input" value="1" min="1" max="10">
+
+            <button class="main-btn" onclick="goToCheckout()">Перейти к оформлению</button>
+            <button class="main-btn secondary-btn" onclick="showStep('step-device')">Назад к устройствам</button>
+        </div>
+
+        <!-- ШАГ 3: Оформление заказа -->
+        <div id="step-checkout" class="step-card">
+            <h2>📦 Оформление заказа</h2>
+            <div id="order-summary" class="summary-box"></div>
+
+            <input type="text" id="cust-name" placeholder="Ваше Имя">
+            <input type="text" id="cust-phone" placeholder="Телефон WhatsApp (+7700...)">
+            <input type="text" id="cust-address" placeholder="Адрес доставки">
+            <input type="text" id="cust-comment" placeholder="Комментарий (необязательно)">
+
+            <p style="text-align: center; font-size: 18px;"><strong>Итого: <span id="total-price">0</span> ₸</strong></p>
+
+            <button class="main-btn" onclick="submitOrder()">Отправить заказ</button>
+            <button class="main-btn secondary-btn" onclick="showStep('step-flavor')">Назад к вкусам</button>
+        </div>
     </div>
 
     <script>
-        const API_URL = "https://rotten-dingos-cross.loca.lt";
-        let catalogData = [];
-        let cart = []; // Хранит выбранные товары
+        // ВНИМАНИЕ: Если тестируешь локально — поставь "http://127.0.0.1:8000". 
+        // Для бота с туннелем укажи текущую ссылку (например, loca.lt).
+        const API_URL = "http://127.0.0.1:8000";
 
+        let catalogData = [];
+        let currentIndex = 0;
+        let selectedDevice = null;
+        let finalCartItem = null;
+
+        // Инициализация Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+
+        // Загрузка каталога с сервера (main.py -> /api/catalog)
         async function loadCatalog() {
             try {
                 let response = await fetch(`${API_URL}/api/catalog`);
-                catalogData = await response.json();
+                if (!response.ok) throw new Error('Ошибка сервера');
                 
-                let container = document.getElementById('catalog-container');
-                container.innerHTML = '';
+                catalogData = await response.json();
 
-                if (catalogData.length === 0) {
-                    container.innerHTML = '<p>В данный момент товар закончился.</p>';
+                if (!catalogData || catalogData.length === 0) {
+                    document.getElementById('slot-item-name').innerText = "Товары закончились";
+                    document.getElementById('slot-item-price').innerText = "";
                     return;
                 }
 
-                catalogData.forEach((item, index) => {
-                    let optionsHtml = item.flavors.map(f => `<option value="${f.name}">${f.name} (В наличии: ${f.stock} шт.)</option>`).join('');
-                    
-                    let card = document.createElement('div');
-                    card.className = 'product-card';
-                    card.innerHTML = `
-                        <h3>${item.name}</h3>
-                        <p>Цена: <strong>${item.price}</strong></p>
-                        <label>Выберите вкус:</label>
-                        <select id="flavor-${index}">${optionsHtml}</select>
-                        <label>Количество:</label>
-                        <input type="number" id="qty-${index}" value="1" min="1" max="10">
-                        <button onclick="addToCart('${item.name}', ${index}, '${item.price}')">Добавить в корзину</button>
-                    `;
-                    container.appendChild(card);
-                });
+                currentIndex = 0;
+                updateSlotDisplay();
             } catch (err) {
                 console.error(err);
-                document.getElementById('catalog-container').innerText = 'Ошибка загрузки каталога с сервера.';
+                document.getElementById('slot-item-name').innerText = "Ошибка соединения";
+                alert('Не удалось подключиться к серверу каталога.');
             }
         }
 
-        function addToCart(modelName, index, priceStr) {
-            let flavorSelect = document.getElementById(`flavor-${index}`);
-            let qtyInput = document.getElementById(`qty-${index}`);
-            
-            let flavor = flavorSelect.value;
-            let quantity = parseInt(qtyInput.value);
-            let numericPrice = parseFloat(priceStr.replace(/[^0-9]/g, ''));
-
-            cart.push({
-                model: modelName,
-                flavor: flavor,
-                quantity: quantity,
-                selling_price: numericPrice
-            });
-
-            alert(`Добавлено в корзину: ${modelName} (${flavor}) — ${quantity} шт.`);
-            updateTotal();
+        // Логика барабана (перелистывание вперед/назад)
+        function updateSlotDisplay() {
+            if (catalogData.length === 0) return;
+            let item = catalogData[currentIndex];
+            document.getElementById('slot-item-name').innerText = item.name;
+            document.getElementById('slot-item-price').innerText = `${item.price} ₸`;
         }
 
-        function updateTotal() {
-            let total = cart.reduce((sum, item) => sum + (item.selling_price * item.quantity), 0);
-            document.getElementById('total-price').innerText = total.toLocaleString();
+        function nextDevice() {
+            if (catalogData.length === 0) return;
+            currentIndex = (currentIndex + 1) % catalogData.length;
+            updateSlotDisplay();
         }
 
-        async function submitOrder() {
-            if (cart.length === 0) {
-                alert('Ваша корзина пуста!');
+        function prevDevice() {
+            if (catalogData.length === 0) return;
+            currentIndex = (currentIndex - 1 + catalogData.length) % catalogData.length;
+            updateSlotDisplay();
+        }
+
+        // Переход с шага барабана на шаг выбора вкуса
+        function confirmDevice() {
+            if (catalogData.length === 0) {
+                alert('Нет доступных устройств!');
                 return;
             }
 
+            selectedDevice = catalogData[currentIndex];
+            document.getElementById('selected-device-info').innerText = `${selectedDevice.name} — ${selectedDevice.price} ₸`;
+
+            // Заполняем выпадающий список вкусов для выбранного устройства
+            let flavorSelect = document.getElementById('flavor-select');
+            flavorSelect.innerHTML = '';
+
+            if (selectedDevice.flavors && selectedDevice.flavors.length > 0) {
+                selectedDevice.flavors.forEach(f => {
+                    let opt = document.createElement('option');
+                    opt.value = f.name;
+                    opt.textContent = `${f.name} (Остаток: ${f.stock} шт.)`;
+                    flavorSelect.appendChild(opt);
+                });
+            } else {
+                let opt = document.createElement('option');
+                opt.value = "Стандарт";
+                opt.textContent = "Стандарт";
+                flavorSelect.appendChild(opt);
+            }
+
+            showStep('step-flavor');
+        }
+
+        // Переход к оформлению заказа
+        function goToCheckout() {
+            let flavorSelect = document.getElementById('flavor-select');
+            let qtyInput = document.getElementById('qty-input');
+
+            let flavor = flavorSelect.value;
+            let quantity = parseInt(qtyInput.value) || 1;
+            
+            // Чистим цену от символов для расчёта суммы
+            let numericPrice = parseFloat(String(selectedDevice.price).replace(/[^0-9.]/g, '')) || 0;
+            let total = numericPrice * quantity;
+
+            finalCartItem = {
+                model: selectedDevice.name,
+                flavor: flavor,
+                quantity: quantity,
+                selling_price: numericPrice
+            };
+
+            document.getElementById('order-summary').innerText = `${selectedDevice.name} / Вкус: ${flavor} — ${quantity} шт.`;
+            document.getElementById('total-price').innerText = total.toLocaleString();
+
+            showStep('step-checkout');
+        }
+
+        // Управление переключением шагов интерфейса
+        function showStep(stepId) {
+            document.querySelectorAll('.step-card').forEach(el => el.classList.remove('active'));
+            document.getElementById(stepId).classList.add('active');
+        }
+
+        // Отправка заказа на сервер (main.py -> /api/orders/create)
+        async function submitOrder() {
             let name = document.getElementById('cust-name').value.trim();
             let phone = document.getElementById('cust-phone').value.trim();
             let address = document.getElementById('cust-address').value.trim();
             let comment = document.getElementById('cust-comment').value.trim();
 
             if (!name || !phone || !address) {
-                alert('Пожалуйста, заполните имя, телефон и адрес!');
+                alert('Пожалуйста, заполните имя, телефон и адрес доставки!');
                 return;
             }
 
-            let total = cart.reduce((sum, item) => sum + (item.selling_price * item.quantity), 0);
+            let total = finalCartItem.selling_price * finalCartItem.quantity;
 
             let orderPayload = {
                 customer_name: name,
                 whatsapp_phone: phone,
                 address: address,
-                items: cart,
+                items: [finalCartItem],
                 total_price: total,
                 payment_type: "Наличные/Перевод",
                 comment: comment
@@ -133,22 +351,22 @@
                 
                 let result = await response.json();
                 if (response.ok) {
-                    alert('🎉 Заказ успешно оформлен!');
-                    cart = [];
-                    updateTotal();
-                    // Если открыто в Телеграме, закрываем WebApp
+                    alert('🎉 Заказ успешно оформлен! Спасибо за покупку.');
                     if (window.Telegram && window.Telegram.WebApp) {
                         window.Telegram.WebApp.close();
+                    } else {
+                        location.reload();
                     }
                 } else {
-                    alert('Ошибка сервера: ' + result.detail);
+                    alert('Ошибка сервера: ' + (result.detail || 'Не удалось создать заказ'));
                 }
             } catch (err) {
                 console.error(err);
-                alert('Не удалось отправить заказ. Проверьте соединение с сервером.');
+                alert('Не удалось отправить заказ. Проверьте связь с сервером.');
             }
         }
 
+        // Запуск при открытии страницы
         loadCatalog();
     </script>
 </body>
