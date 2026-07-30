@@ -253,7 +253,6 @@
             gap: 8px;
         }
 
-        /* Выпадающий выбор страны */
         .country-select {
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -294,7 +293,7 @@
             line-height: 1.2;
         }
 
-        /* Кастомный выпадающий список для адресов по буквам */
+        /* Выпадающий список подсказок адресов */
         .address-suggestions {
             position: absolute;
             top: 100%;
@@ -305,7 +304,7 @@
             border-radius: 12px;
             margin-top: 4px;
             z-index: 100;
-            max-height: 150px;
+            max-height: 160px;
             overflow-y: auto;
             display: none;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -313,7 +312,7 @@
 
         .suggestion-item {
             padding: 10px 14px;
-            font-size: 14px;
+            font-size: 13px;
             color: #fff;
             cursor: pointer;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -324,7 +323,6 @@
             background: rgba(0, 243, 255, 0.15);
         }
 
-        /* Кнопка геопозиции */
         .btn-geo {
             background: rgba(0, 243, 255, 0.1);
             border: 1px dashed var(--neon-blue);
@@ -470,10 +468,10 @@
 
                 <div class="form-group">
                     <label class="form-label">Адрес доставки</label>
-                    <input type="text" id="cust-address" placeholder="Начните ввод адреса..." autocomplete="off" oninput="handleAddressInput()">
+                    <input type="text" id="cust-address" placeholder="Например: Абая, Баймагамбетова, 9 мкр" autocomplete="off" oninput="handleAddressInput()">
                     <div id="address-suggestions" class="address-suggestions"></div>
                     <button type="button" class="btn-geo" onclick="requestGeolocation()">📍 Определить моё местоположение</button>
-                    <span class="form-hint">Доставка по г. Костанай, Рудный, Затобольск, г. Тобыл.</span>
+                    <span class="form-hint">Поиск улиц и микрорайонов по г. Костанай и области.</span>
                 </div>
 
                 <div class="form-group">
@@ -514,14 +512,6 @@
             "КИВИ, МАРАКУЙЯ, ГУАВА": "#ffb703"
         };
 
-        // База справочника адресов
-        const addressCatalog = [
-            "г. Костанай",
-            "г. Рудный",
-            "п. Затобольск (Тобыл)",
-            "г. Тобыл"
-        ];
-
         const tg = window.Telegram?.WebApp;
         if (tg) {
             tg.expand();
@@ -533,6 +523,7 @@
         let selectedFlavor = null;
         let deviceSwiper = null;
         let flavorSwiper = null;
+        let searchTimeout = null;
 
         function extractPuffs(name) {
             const match = name.match(/\d+/g);
@@ -646,11 +637,13 @@
             else phoneInput.placeholder = "123-456-789";
         }
 
-        // Логика умного ввода адреса (показ от 2 символов)
+        // Живой геопоиск улиц/микрорайонов в Костанае через OpenStreetMap Nominatim
         function handleAddressInput() {
             const input = document.getElementById('cust-address');
             const suggestionsBox = document.getElementById('address-suggestions');
-            const query = input.value.trim().toLowerCase();
+            const query = input.value.trim();
+
+            clearTimeout(searchTimeout);
 
             if (query.length < 2) {
                 suggestionsBox.style.display = 'none';
@@ -658,17 +651,27 @@
                 return;
             }
 
-            const filtered = addressCatalog.filter(addr => addr.toLowerCase().includes(query));
+            // Задержка 300мс, чтобы не слать запросы на каждый символ при быстром наборе
+            searchTimeout = setTimeout(async () => {
+                try {
+                    // Ищем по запросу с привязкой к Костанаю (город + область)
+                    const searchQuery = encodeURIComponent(`${query}, Костанай, Казахстан`);
+                    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${searchQuery}&countrycodes=kz&limit=5&accept-language=ru`);
+                    const data = await response.json();
 
-            if (filtered.length === 0) {
-                suggestionsBox.style.display = 'none';
-                return;
-            }
+                    if (!data || data.length === 0) {
+                        suggestionsBox.style.display = 'none';
+                        return;
+                    }
 
-            suggestionsBox.innerHTML = filtered.map(item => `
-                <div class="suggestion-item" onclick="selectAddress('${item}')">${item}</div>
-            `).join('');
-            suggestionsBox.style.display = 'block';
+                    suggestionsBox.innerHTML = data.map(item => `
+                        <div class="suggestion-item" onclick="selectAddress('${item.display_name.replace(/'/g, "\\'")}')">${item.display_name}</div>
+                    `).join('');
+                    suggestionsBox.style.display = 'block';
+                } catch (e) {
+                    console.error('Ошибка геопоиска:', e);
+                }
+            }, 300);
         }
 
         function selectAddress(address) {
@@ -676,7 +679,7 @@
             document.getElementById('address-suggestions').style.display = 'none';
         }
 
-        // Автоопределение геолокации
+        // Автоопределение геолокации по GPS устройства
         function requestGeolocation() {
             if (!navigator.geolocation) {
                 alert('Геолокация не поддерживается вашим устройством');
@@ -701,10 +704,10 @@
                 } catch (e) {
                     addrInput.value = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
                 }
-                addrInput.placeholder = 'Выберите или введите адрес';
+                addrInput.placeholder = 'Например: Абая, Баймагамбетова, 9 мкр';
             }, (error) => {
                 alert('Не удалось получить координаты. Проверьте разрешения.');
-                addrInput.placeholder = 'Выберите или введите адрес';
+                addrInput.placeholder = 'Например: Абая, Баймагамбетова, 9 мкр';
             }, { timeout: 10000 });
         }
 
