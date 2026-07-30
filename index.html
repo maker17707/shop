@@ -2,421 +2,406 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Rasky Kostanay</title>
+    <!-- Подключаем Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Подключаем Swiper CSS для 3D-барабана -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         :root {
-            --tg-theme-bg-color: #121214;
-            --tg-theme-text-color: #f3f3f6;
-            --tg-theme-hint-color: #8e8e93;
-            --tg-theme-button-color: #6c5ce7;
-            --tg-theme-button-text-color: #ffffff;
-            --bg-color: #121214;
-            --card-bg: #1a1a1e;
-            --accent: #6c5ce7;
-            --accent-glow: rgba(108, 92, 231, 0.3);
+            --bg-color: #0d0d11;
+            --text-color: #ffffff;
+            --neon-color: #00f3ff;
+            --neon-glow: rgba(0, 243, 255, 0.6);
         }
-        
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            user-select: none;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-color);
-            color: var(--tg-theme-text-color);
-            padding: 16px;
-            padding-bottom: 90px;
-            max-width: 480px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            font-size: 20px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 16px;
-            color: #fff;
-            letter-spacing: -0.5px;
-        }
-
-        h2 { 
-            font-size: 16px; 
-            color: var(--tg-theme-hint-color); 
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .section {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Карточка товара с фото */
-        .product-card {
+            color: var(--text-color);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            text-align: center;
-        }
-
-        .product-image {
-            width: 100%;
-            max-height: 220px;
-            object-fit: contain;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            background: #121214;
-            padding: 8px;
-        }
-
-        .product-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 4px;
-        }
-
-        .product-price {
-            font-size: 16px;
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        /* 3D Drum / Wheel Selector for Flavors (как будильник в iOS) */
-        .wheel-wrapper {
-            position: relative;
-            height: 150px;
-            perspective: 1000px;
-            margin: 5px 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .wheel-wrapper::before,
-        .wheel-wrapper::after {
-            content: '';
-            position: absolute;
-            left: 0; right: 0;
-            height: 45px;
-            z-index: 5;
-            pointer-events: none;
-        }
-        .wheel-wrapper::before {
-            top: 0;
-            background: linear-gradient(to bottom, var(--card-bg), rgba(26, 26, 30, 0));
-        }
-        .wheel-wrapper::after {
-            bottom: 0;
-            background: linear-gradient(to top, var(--card-bg), rgba(26, 26, 30, 0));
-        }
-
-        .wheel-indicator {
-            position: absolute;
-            top: 50%;
-            left: 0; right: 0;
-            transform: translateY(-50%);
-            height: 38px;
-            background: rgba(108, 92, 231, 0.15);
-            border-top: 1px solid var(--accent);
-            border-bottom: 1px solid var(--accent);
-            pointer-events: none;
-            z-index: 2;
-            border-radius: 8px;
-        }
-
-        .wheel-container {
-            width: 100%;
-            height: 100%;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            padding: 56px 0;
-            position: relative;
-            z-index: 3;
-            text-align: center;
-        }
-        .wheel-container::-webkit-scrollbar {
-            display: none;
-        }
-
-        .wheel-item {
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            scroll-snap-align: center;
-            font-size: 15px;
-            color: var(--tg-theme-hint-color);
-            opacity: 0.35;
-            transform: scale(0.82);
-            filter: blur(1.5px);
-            transition: transform 0.15s ease, opacity 0.15s ease, color 0.15s ease, filter 0.15s ease;
-            cursor: pointer;
-            user-select: none;
-            padding: 0 10px;
-            white-space: nowrap;
+            justify-content: space-between;
             overflow: hidden;
-            text-overflow: ellipsis;
+            padding: 20px 0;
         }
 
-        .wheel-item.active {
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 17px;
-            opacity: 1;
-            transform: scale(1);
-            filter: blur(0px);
-            text-shadow: 0 0 12px var(--accent-glow);
+        /* Шапка магазина */
+        header {
+            text-align: center;
+            z-index: 10;
         }
 
-        /* Form elements */
-        input, select, textarea {
+        header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        header p {
+            font-size: 13px;
+            color: #8a8a9e;
+            margin-top: 4px;
+        }
+
+        /* Основной контейнер */
+        .step-container {
             width: 100%;
-            background: #121214;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 12px 16px;
-            color: #fff;
-            font-size: 15px;
-            margin-top: 8px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--accent);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex: 1;
         }
 
-        .btn {
-            background: var(--accent);
-            color: var(--tg-theme-button-text-color);
-            border: none;
-            border-radius: 14px;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            box-shadow: 0 4px 15px var(--accent-glow);
-            transition: transform 0.1s, opacity 0.2s;
-            margin-top: 16px;
-        }
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .page {
+        .step {
             display: none;
-        }
-        .page.active {
-            display: block;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.4s ease forwards;
         }
 
-        .summary-box {
-            background: rgba(108, 92, 231, 0.08);
-            border: 1px solid rgba(108, 92, 231, 0.2);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            line-height: 1.5;
+        .step.active {
+            display: flex;
         }
-        .summary-box span {
-            color: var(--accent);
-            font-weight: 600;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 3D Карусель / Барабан */
+        .swiper {
+            width: 100%;
+            padding-top: 20px;
+            padding-bottom: 40px;
+        }
+
+        .swiper-slide {
+            background-position: center;
+            background-size: cover;
+            width: 250px;
+            height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        /* Изображение устройства */
+        .device-card img {
+            width: 180px;
+            height: 220px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+            transition: transform 0.3s ease;
+        }
+
+        .swiper-slide-active .device-card img {
+            transform: scale(1.08);
+        }
+
+        .device-title {
+            margin-top: 15px;
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        /* Неоновый элемент под барабаном */
+        .neon-podium {
+            width: 220px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--neon-color);
+            box-shadow: 0 0 25px 8px var(--neon-glow), 0 0 50px 15px var(--neon-glow);
+            transition: background 0.5s ease, box-shadow 0.5s ease;
+            margin-top: -20px;
+            z-index: 2;
+        }
+
+        /* Карточка вкуса */
+        .flavor-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            width: 80%;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            transition: border-color 0.4s ease;
+        }
+
+        .swiper-slide-active .flavor-card {
+            border-color: var(--neon-color);
+        }
+
+        .flavor-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .flavor-name {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        /* Кнопки управления */
+        .btn-action {
+            background: linear-gradient(135deg, #00f3ff, #0066ff);
+            color: #fff;
+            border: none;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 15px;
+            z-index: 10;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        .btn-action:active {
+            transform: scale(0.96);
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #8a8a9e;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <h1>Добро пожаловать в магазин Rasky Kostanay</h1>
+    <header>
+        <h1>Rasky Kostanay</h1>
+        <p id="step-subtitle">Шаг 1: Выберите устройство</p>
+    </header>
 
-    <!-- СТРАНИЦА 1: Выбор модели и вкуса -->
-    <div id="pageSelection" class="page active">
-        <!-- Карточка товара в наличии -->
-        <div class="section">
-            <h2>Доступная модель</h2>
-            <div class="product-card">
-                <!-- Фото лежит в том же репозитории GitHub, что и index.html -->
-                <img src="vaka_sopro_20000.jpg" alt="Vaka SoPro 20000 Boost" class="product-image" onerror="this.src='https://via.placeholder.com/300x200?text=Vaka+SoPro+20000+Boost'">
-                <div class="product-title">Vaka SoPro 20000 Boost</div>
-                <div class="product-price">15000 ₸</div>
-            </div>
-        </div>
-
-        <!-- Барабан выбора вкусов -->
-        <div class="section">
-            <h2>Выберите вкус</h2>
-            <div class="wheel-wrapper">
-                <div class="wheel-indicator"></div>
-                <div class="wheel-container" id="flavorWheel">
-                    <!-- Заполняется динамически -->
+    <div class="step-container">
+        <!-- ШАГ 1: ВЫБОР УСТРОЙСТВА -->
+        <div class="step active" id="step-device">
+            <div class="swiper deviceSwiper">
+                <div class="swiper-wrapper" id="device-list">
+                    <!-- Заполняется динамически через JS -->
                 </div>
             </div>
+            <button class="btn-action" onclick="confirmDevice()">Выбрать устройство</button>
         </div>
 
-        <button type="button" class="btn" id="goToOrderBtn">Оформить заказ</button>
-    </div>
-
-    <!-- СТРАНИЦА 2: Оформление заказа -->
-    <div id="pageOrder" class="page">
-        <div class="section">
-            <h2>Ваш выбор</h2>
-            <div class="summary-box" id="orderSummaryText">
-                Модель: <span id="sumModel">-</span><br>
-                Цена: <span id="sumPrice">-</span><br>
-                Вкус: <span id="sumFlavor">-</span>
+        <!-- ШАГ 2: ВЫБОР ВКУСА -->
+        <div class="step" id="step-flavor">
+            <button class="btn-back" onclick="goBackToDevices()">← Назад к устройствам</button>
+            <div class="swiper flavorSwiper">
+                <div class="swiper-wrapper" id="flavor-list">
+                    <!-- Заполняется динамически через JS -->
+                </div>
             </div>
-
-            <h2>Данные для доставки</h2>
-            <form id="orderForm">
-                <label>Имя получателя</label>
-                <input type="text" id="nameInput" placeholder="Ваше имя" required>
-
-                <label style="margin-top: 12px; display:block;">Телефон (WhatsApp)</label>
-                <input type="tel" id="phoneInput" placeholder="+7 (___) ___-__-__" required>
-
-                <label style="margin-top: 12px; display:block;">Адрес доставки</label>
-                <input type="text" id="addressInput" placeholder="Улица, дом, квартира" required>
-
-                <button type="submit" class="btn">Подтвердить заказ</button>
-            </form>
+            <!-- Интеллектуальный неоновый подиум -->
+            <div class="neon-podium" id="neon-glow"></div>
             
-            <button type="button" class="btn" id="backToSelectionBtn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); box-shadow: none; margin-top: 8px;">Назад к выбору</button>
+            <button class="btn-action" id="btn-select-flavor" onclick="confirmFlavor()">Далее</button>
         </div>
     </div>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        // Данные единственной доступной модели и её вкусов
-        const currentDevice = {
-            name: 'Vaka SoPro 20000 Boost',
-            price: '15000 ₸',
-            flavors: [
-                'Мята и ледяной энергетик',
-                'Клубничный сорбет',
-                'Арбузная жвачка',
-                'Двойное яблоко',
-                'Виноградный микс',
-                'Лесные ягоды',
-                'Черника малина',
-                'Манго персик'
-            ]
-        };
-
-        let selectedFlavor = currentDevice.flavors[0];
-
-        const flavorWheel = document.getElementById('flavorWheel');
-        const pageSelection = document.getElementById('pageSelection');
-        const pageOrder = document.getElementById('pageOrder');
-
-        // Рендер барабана вкусов (чёткая дискретная прокрутка по одному шагу)
-        function renderFlavorWheel() {
-            flavorWheel.innerHTML = '';
-            currentDevice.flavors.forEach((flavor, index) => {
-                const item = document.createElement('div');
-                item.className = 'wheel-item';
-                item.textContent = flavor;
-                // Клик по конкретному элементу плавно прокручивает его ровно на центр (высота элемента 38px)
-                item.onclick = () => {
-                    flavorWheel.scrollTo({ top: index * 38, behavior: 'smooth' });
-                    if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
-                };
-                flavorWheel.appendChild(item);
-            });
-            updateFlavorActiveState();
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand(); // Разворачиваем на весь экран
+            tg.ready();
         }
 
-        // Обновление активного элемента при скролле барабана
-        function updateFlavorActiveState() {
-            const scrollTop = flavorWheel.scrollTop;
-            const index = Math.round(scrollTop / 38);
-            const items = flavorWheel.querySelectorAll('.wheel-item');
-            
-            items.forEach((item, idx) => {
-                if (idx === index) {
-                    item.classList.add('active');
-                    selectedFlavor = item.textContent;
-                } else {
-                    item.classList.remove('active');
+        // Данные товаров и вкусов с индивидуальной неоновой подсветкой
+        const catalogData = [
+            {
+                id: 'sopro20000',
+                name: 'Vaka SoPro 20000',
+                image: 'vaka_sopro_20000.png', // Укажите путь к вашему файлу
+                flavors: [
+                    { name: 'Прохладная Мята', icon: '🌿', color: '#00f3ff', glow: 'rgba(0, 243, 255, 0.8)' },
+                    { name: 'Сочный Персик', icon: '🍑', color: '#ff7700', glow: 'rgba(255, 119, 0, 0.8)' },
+                    { name: 'Двойное Яблоко', icon: '🍏', color: '#39ff14', glow: 'rgba(57, 255, 20, 0.8)' },
+                    { name: 'Клубника Банан', icon: '🍓', color: '#ff0055', glow: 'rgba(255, 0, 85, 0.8)' },
+                    { name: 'Черника Лёд', icon: '🫐', color: '#8a2be2', glow: 'rgba(138, 43, 226, 0.8)' }
+                ]
+            },
+            {
+                id: 'pa10000',
+                name: 'Vaka PA 10000',
+                image: 'vaka_pa_10000.png',
+                flavors: [
+                    { name: 'Лесные Ягоды', icon: '🫐', color: '#9d00ff', glow: 'rgba(157, 0, 255, 0.8)' },
+                    { name: 'Арбузная Свежесть', icon: '🍉', color: '#ff0055', glow: 'rgba(255, 0, 85, 0.8)' },
+                    { name: 'Энергетик', icon: '⚡', color: '#ffea00', glow: 'rgba(255, 234, 0, 0.8)' },
+                    { name: 'Сладкий Манго', icon: '🥭', color: '#ffaa00', glow: 'rgba(255, 170, 0, 0.8)' }
+                ]
+            },
+            {
+                id: 'slim8000',
+                name: 'Vaka Slim 8000',
+                image: 'vaka_slim_8000.png',
+                flavors: [
+                    { name: 'Вишня Лёд', icon: '🍒', color: '#dc143c', glow: 'rgba(220, 20, 60, 0.8)' },
+                    { name: 'Виноград', icon: '🍇', color: '#aa00ff', glow: 'rgba(170, 0, 255, 0.8)' },
+                    { name: 'Кислый Лимон', icon: '🍋', color: '#ccff00', glow: 'rgba(204, 255, 0, 0.8)' }
+                ]
+            }
+        ];
+
+        let selectedDevice = null;
+        let selectedFlavor = null;
+        let deviceSwiper = null;
+        let flavorSwiper = null;
+
+        // Генерация списка устройств
+        function renderDevices() {
+            const container = document.getElementById('device-list');
+            container.innerHTML = catalogData.map(dev => `
+                <div class="swiper-slide">
+                    <div class="device-card">
+                        <img src="${dev.image}" alt="${dev.name}" onerror="this.src='https://via.placeholder.com/180x220/1a1a24/ffffff?text=${encodeURIComponent(dev.name)}'">
+                        <div class="device-title">${dev.name}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Инициализация 3D-карусели (эффект барабана/Coverflow)
+            deviceSwiper = new Swiper('.deviceSwiper', {
+                effect: 'coverflow',
+                grabCursor: true,
+                centeredSlides: true,
+                slidesPerView: 'auto',
+                coverflowEffect: {
+                    rotate: 35,
+                    stretch: 0,
+                    depth: 160,
+                    modifier: 1,
+                    slideShadows: false,
+                },
+                on: {
+                    slideChange: () => {
+                        triggerHaptic();
+                    }
                 }
             });
         }
 
-        flavorWheel.addEventListener('scroll', updateFlavorActiveState);
+        // Генерация списка вкусов для выбранного устройства
+        function renderFlavors(flavors) {
+            const container = document.getElementById('flavor-list');
+            container.innerHTML = flavors.map(fl => `
+                <div class="swiper-slide">
+                    <div class="flavor-card">
+                        <div class="flavor-icon">${fl.icon}</div>
+                        <div class="flavor-name">${fl.name}</div>
+                    </div>
+                </div>
+            `).join('');
 
-        // Легкая вибрация при завершении свайпа
-        flavorWheel.addEventListener('touchend', () => {
-            setTimeout(() => { 
-                if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); 
-            }, 100);
-        });
+            if (flavorSwiper) flavorSwiper.destroy();
 
-        // Переход на страницу оформления заказа
-        document.getElementById('goToOrderBtn').onclick = () => {
-            document.getElementById('sumModel').textContent = currentDevice.name;
-            document.getElementById('sumPrice').textContent = currentDevice.price;
-            document.getElementById('sumFlavor').textContent = selectedFlavor;
-
-            pageSelection.classList.remove('active');
-            pageOrder.classList.add('active');
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-            window.scrollTo(0, 0);
-        };
-
-        // Возврат назад к выбору
-        document.getElementById('backToSelectionBtn').onclick = () => {
-            pageOrder.classList.remove('active');
-            pageSelection.classList.add('active');
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-            window.scrollTo(0, 0);
-        };
-
-        // Автозаполнение имени из Телеграм-профиля
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            document.getElementById('nameInput').value = tg.initDataUnsafe.user.first_name || '';
+            flavorSwiper = new Swiper('.flavorSwiper', {
+                effect: 'coverflow',
+                grabCursor: true,
+                centeredSlides: true,
+                slidesPerView: 'auto',
+                coverflowEffect: {
+                    rotate: 30,
+                    stretch: 0,
+                    depth: 120,
+                    modifier: 1,
+                    slideShadows: false,
+                },
+                on: {
+                    init: function () {
+                        updateNeonGlow(flavors[this.activeIndex]);
+                    },
+                    slideChange: function () {
+                        triggerHaptic();
+                        updateNeonGlow(flavors[this.activeIndex]);
+                    }
+                }
+            });
         }
 
-        // Отправка заказа на бэкенд
-        document.getElementById('orderForm').onsubmit = (e) => {
-            e.preventDefault();
-            const orderData = {
-                device: currentDevice.name,
-                price: currentDevice.price,
-                flavor: selectedFlavor,
-                name: document.getElementById('nameInput').value,
-                phone: document.getElementById('phoneInput').value,
-                address: document.getElementById('addressInput').value
-            };
+        // Интеллектуальное изменение цвета неоновой подсветки
+        function updateNeonGlow(flavor) {
+            if (!flavor) return;
+            const podium = document.getElementById('neon-glow');
+            podium.style.setProperty('--neon-color', flavor.color);
+            podium.style.setProperty('--neon-glow', flavor.glow);
+        }
 
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        // Виброотклик в Telegram при прокрутке барабана
+        function triggerHaptic() {
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.selectionChanged();
+            }
+        }
+
+        // Переход к выбору вкуса
+        function confirmDevice() {
+            const activeIndex = deviceSwiper.activeIndex;
+            selectedDevice = catalogData[activeIndex];
             
-            fetch('/api/orders/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
-            }).then(() => {
-                tg.close();
-            }).catch(() => {
-                alert('Заказ успешно создан!');
-                tg.close();
-            });
-        };
+            document.getElementById('step-subtitle').innerText = `${selectedDevice.name} — Выберите вкус`;
+            document.getElementById('step-device').classList.remove('active');
+            document.getElementById('step-flavor').classList.add('active');
 
-        // Инициализация барабана
-        renderFlavorWheel();
+            renderFlavors(selectedDevice.flavors);
+        }
+
+        // Возврат к выбору устройства
+        function goBackToDevices() {
+            document.getElementById('step-subtitle').innerText = 'Шаг 1: Выберите устройство';
+            document.getElementById('step-flavor').classList.remove('active');
+            document.getElementById('step-device').classList.add('active');
+        }
+
+        // Выбор вкуса (Задел под следующий шаг)
+        function confirmFlavor() {
+            const activeFlavorIndex = flavorSwiper.activeIndex;
+            selectedFlavor = selectedDevice.flavors[activeFlavorIndex];
+
+            alert(`Выбрано: ${selectedDevice.name}\nВкус: ${selectedFlavor.name}`);
+        }
+
+        // Запуск приложения
+        renderDevices();
     </script>
 </body>
 </html>
