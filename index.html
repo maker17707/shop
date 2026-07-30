@@ -287,8 +287,16 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
-        // Актуальный URL туннеля Serveo
+        // Актуальный URL туннеля
         const API_BASE_URL = "https://warm-heads-throw.loca.lt";
+
+        // --- СЛОВАРЬ КАРТИНОК С GITHUB ---
+        const deviceImages = {
+            "WAKA soPRO BOOST 20000": "https://raw.githubusercontent.com/maker17707/shop/main/sopro20000.png",
+            "PA 10000": "https://raw.githubusercontent.com/maker17707/shop/main/pa10000.png",
+            "Slim 8000": "https://raw.githubusercontent.com/maker17707/shop/main/slim8000.png"
+        };
+        // ---------------------------------
 
         const tg = window.Telegram?.WebApp;
         if (tg) {
@@ -321,15 +329,19 @@
             }
 
             const container = document.getElementById('device-list');
-            container.innerHTML = catalogData.map(dev => `
+            container.innerHTML = catalogData.map(dev => {
+                const imageUrl = deviceImages[dev.name] || 'https://via.placeholder.com/160x190/1a1a24/ffffff?text=' + encodeURIComponent(dev.name);
+                
+                return `
                 <div class="swiper-slide">
                     <div class="device-card">
-                        <img src="images/${dev.image}" alt="${dev.name}" onerror="this.src='https://via.placeholder.com/160x190/1a1a24/ffffff?text=${encodeURIComponent(dev.name)}'">
+                        <img src="${imageUrl}" alt="${dev.name}">
                         <div class="device-title">${dev.name}</div>
                         <div class="device-price">${dev.price}</div>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
             deviceSwiper = new Swiper('.deviceSwiper', {
                 effect: 'coverflow',
