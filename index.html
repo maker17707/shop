@@ -13,8 +13,6 @@
             --text-main: #f8fafc;
             --text-sub: #8b949e;
             --accent: #ef4444;
-            --accent-glow: rgba(239, 68, 68, 0.3);
-            --kaspi-color: #00d2ff;
         }
 
         * {
@@ -54,7 +52,7 @@
             text-transform: uppercase;
         }
 
-        /* TABS (1. Устройство / 2. Вкус) */
+        /* TABS */
         .tabs-container {
             display: flex;
             justify-content: center;
@@ -121,11 +119,12 @@
             gap: 16px;
             backface-visibility: hidden;
             box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         .drum-item img {
-            width: 48px;
-            height: 48px;
+            width: 52px;
+            height: 52px;
             object-fit: contain;
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
             pointer-events: none;
@@ -162,7 +161,7 @@
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            box-shadow: 0 0 8px currentColor;
+            box-shadow: 0 0 10px currentColor;
             flex-shrink: 0;
         }
 
@@ -178,6 +177,7 @@
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         .info-text-group {
@@ -208,6 +208,7 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
             white-space: nowrap;
+            transition: background 0.3s, box-shadow 0.3s;
         }
 
         .btn-action:active {
@@ -416,7 +417,7 @@
         </div>
     </div>
 
-    <!--НИЖНЯЯ КАРТОЧКА ПРЕВЬЮ В КАТАЛОГЕ -->
+    <!-- НИЖНЯЯ КАРТОЧКА ПРЕВЬЮ -->
     <div class="info-card" id="infoCard">
         <div class="info-text-group">
             <div class="info-title-preview" id="infoTitlePreview">soPRO-20000</div>
@@ -425,7 +426,7 @@
         <button class="btn-action" onclick="goToFormPage()">Выбрать вкус →</button>
     </div>
 
-    <!-- СЕКЦИЯ ОФОРМЛЕНИЯ ДОСТАВКИ (КАК НА СКРИНШОТЕ) -->
+    <!-- СЕКЦИЯ ОФОРМЛЕНИЯ ДОСТАВКИ -->
     <div id="formSection" class="page-section">
         <div class="form-group">
             <label>Ваше имя</label>
@@ -496,10 +497,25 @@
         let startAngle = 0;
         const radius = 130;
 
+        // Точное сопоставление картинок из репозитория
         function getLocalImage(modelName) {
-            if (!modelName) return "images/default.png";
-            let formatted = modelName.toLowerCase().replace(/[^a-z0-9а-яё]+/g, '_').replace(/^_+|_+$/g, '');
-            return `images/${formatted}.png`;
+            if (!modelName) return "pa10000.png";
+            let lower = modelName.toLowerCase();
+            if (lower.includes("sopro")) return "sopro20000.png";
+            if (lower.includes("slim")) return "slim8000.png";
+            return "pa10000.png";
+        }
+
+        // Автоматическая подборка цвета подсветки под конкретный вкус
+        function getFlavorColor(flavorName) {
+            if (!flavorName) return "#ff416c";
+            let lower = flavorName.toLowerCase();
+            if (lower.includes("арбуз") || lower.includes("клубник") || lower.includes("малин")) return "#ef4444"; // Красный
+            if (lower.includes("мят") || lower.includes("лед") || lower.includes("мороз") || lower.includes("ментал")) return "#06b6d4"; // Голубой
+            if (lower.includes("виноград") || lower.includes("ежевик") || lower.includes("черник")) return "#8b5cf6"; // Фиолетовый
+            if (lower.includes("энергетик") || lower.includes("манго") || lower.includes("апельсин") || lower.includes("дыня")) return "#eab308"; // Желтый / Оранжевый
+            if (lower.includes("яблок") || lower.includes("киви") || lower.includes("лайм")) return "#10b981"; // Зеленый
+            return "#ff416c"; // Универсальный фирменный
         }
 
         async function initApp() {
@@ -512,16 +528,16 @@
                     throw new Error("Пусто");
                 }
             } catch (err) {
-                console.warn("Бэкенд недоступен, используются демо-данные по скриншотам:", err);
+                console.warn("Бэкенд недоступен, используются демо-данные:", err);
                 catalog = [
                     {
                         name: "soPRO-20000",
                         subtitle: "20 000 затяжек",
                         price: "15 000 ₸",
                         flavors: [
-                            { name: "Арбуз с ЧЗ", stock: 5, color: "#ef4444" },
-                            { name: "Клубничный Милкшейк", stock: 3, color: "#ec4899" },
-                            { name: "Ледяная Мята", stock: 8, color: "#06b6d4" }
+                            { name: "Арбуз с ЧЗ", stock: 5 },
+                            { name: "Ледяная Мята", stock: 8 },
+                            { name: "Клубничный Милкшейк", stock: 3 }
                         ]
                     },
                     {
@@ -529,8 +545,17 @@
                         subtitle: "10 000 затяжек",
                         price: "12 000 ₸",
                         flavors: [
-                            { name: "Виноградный Лёд", stock: 4, color: "#8b5cf6" },
-                            { name: "Энергетик", stock: 6, color: "#eab308" }
+                            { name: "Виноградный Лёд", stock: 4 },
+                            { name: "Энергетик", stock: 6 }
+                        ]
+                    },
+                    {
+                        name: "SLIM-8000",
+                        subtitle: "8 000 затяжек",
+                        price: "10 000 ₸",
+                        flavors: [
+                            { name: "Сочное Яблоко", stock: 7 },
+                            { name: "Манго Маракуйя", stock: 2 }
                         ]
                     }
                 ];
@@ -560,12 +585,10 @@
                 el.dataset.angle = itemAngle;
                 el.dataset.index = index;
 
-                const currentModel = catalog[selectedModelIndex];
-                const imgPath = currentModel ? getLocalImage(currentModel.name) : "images/default.png";
-
                 if (currentTab === 'model') {
+                    const imgPath = getLocalImage(item.name);
                     el.innerHTML = `
-                        <img src="${imgPath}" alt="${item.name}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3050/3050153.png'">
+                        <img src="${imgPath}" alt="${item.name}" onerror="this.src='pa10000.png'">
                         <div class="item-details">
                             <div class="item-title">${item.name}</div>
                             <div class="item-subtitle">${item.subtitle || ''}</div>
@@ -573,8 +596,9 @@
                         <div class="item-price">${item.price}</div>
                     `;
                 } else {
+                    const color = getFlavorColor(item.name);
                     el.innerHTML = `
-                        <div class="flavor-badge" style="background: ${item.color || '#ff416c'}; color: ${item.color || '#ff416c'}"></div>
+                        <div class="flavor-badge" style="background: ${color}; color: ${color}"></div>
                         <div class="item-details">
                             <div class="item-title">${item.name}</div>
                             <div class="item-subtitle">Остаток: ${item.stock} шт.</div>
@@ -612,6 +636,22 @@
                 item.style.transform = `rotateX(${itemAngle}deg) translateZ(${radius}px)`;
                 item.style.opacity = Math.max(0.2, 1 - diff / 90);
                 item.style.filter = `blur(${Math.min(4, diff / 25)}px)`;
+
+                // Динамическая подсветка активного центрального элемента в зависимости от выбора
+                if (diff < 15) {
+                    if (currentTab === 'flavor') {
+                        const flavorName = catalog[selectedModelIndex].flavors[idx].name;
+                        const activeColor = getFlavorColor(flavorName);
+                        item.style.borderColor = activeColor;
+                        item.style.boxShadow = `0 0 20px ${activeColor}40`;
+                    } else {
+                        item.style.borderColor = '#ff416c';
+                        item.style.boxShadow = '0 0 20px rgba(255, 65, 108, 0.3)';
+                    }
+                } else {
+                    item.style.borderColor = 'var(--card-border)';
+                    item.style.boxShadow = '0 8px 20px rgba(0,0,0,0.4)';
+                }
             });
 
             if (currentTab === 'model') {
@@ -651,6 +691,13 @@
             } else {
                 btn.innerText = 'Оформить заказ →';
                 btn.onclick = goToFormPage;
+            }
+
+            // Изменяем подсветку нижней плавающей карточки под активный вкус
+            if (flavor) {
+                const c = getFlavorColor(flavor.name);
+                document.getElementById('infoCard.style.borderColor') // безопасно
+                document.getElementById('infoCard').style.borderColor = c + '40';
             }
         }
 
