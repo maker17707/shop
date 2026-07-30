@@ -8,8 +8,8 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: var(--tg-theme-bg-color, #f4f4f9);
-            color: var(--tg-theme-text-color, #222);
+            background: var(--tg-theme-bg-color, #0f172a);
+            color: var(--tg-theme-text-color, #f8fafc);
             margin: 0;
             padding: 15px;
             display: flex;
@@ -28,12 +28,13 @@
         }
 
         .step-card {
-            background: var(--tg-theme-secondary-bg-color, #ffffff);
-            border-radius: 16px;
+            background: var(--tg-theme-secondary-bg-color, #1e293b);
+            border-radius: 20px;
             padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             margin-bottom: 15px;
             display: none;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .step-card.active {
@@ -42,103 +43,125 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Стиль "барабана" для выбора устройств */
+        /* Стиль игрового барабана */
         .slot-machine {
-            background: #1e1e24;
-            border-radius: 12px;
-            padding: 15px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 16px;
+            padding: 20px;
             color: #fff;
             text-align: center;
             margin-bottom: 20px;
-            border: 2px solid #2ea6ff;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            border: 2px solid #38bdf8;
+            box-shadow: inset 0 0 15px rgba(56, 189, 248, 0.2), 0 5px 15px rgba(0,0,0,0.4);
             position: relative;
+        }
+
+        .slot-image-container {
+            width: 130px;
+            height: 130px;
+            margin: 0 auto 15px auto;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .slot-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.2s ease;
         }
 
         .slot-display {
             font-size: 20px;
-            font-weight: bold;
-            padding: 15px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 8px;
+            font-weight: 800;
+            padding: 12px;
+            background: rgba(56, 189, 248, 0.1);
+            border-radius: 10px;
             margin-bottom: 10px;
-            min-height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
+            min-height: 25px;
+            color: #38bdf8;
         }
 
         .slot-price {
-            font-size: 16px;
-            color: #4cd137;
-            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #4ade80;
+            margin-bottom: 20px;
         }
 
         .slot-controls {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         .slot-btn {
             flex: 1;
-            background: #2ea6ff;
-            color: white;
+            background: #38bdf8;
+            color: #0f172a;
             border: none;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
+            transition: background 0.2s;
         }
-        .slot-btn:active { background: #1a88e0; }
+        .slot-btn:active { background: #0ea5e9; }
 
         select, input {
             width: 100%;
             padding: 12px;
             margin-top: 8px;
             margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
             box-sizing: border-box;
             font-size: 15px;
-            background: var(--tg-theme-bg-color, #fff);
-            color: var(--tg-theme-text-color, #222);
+            background: rgba(255,255,255,0.05);
+            color: inherit;
         }
 
         .main-btn {
-            background: #2ea6ff;
-            color: white;
+            background: #38bdf8;
+            color: #0f172a;
             border: none;
             padding: 14px;
             width: 100%;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             margin-top: 10px;
+            transition: background 0.2s;
         }
-        .main-btn:active { background: #1a88e0; }
+        .main-btn:active { background: #0ea5e9; }
 
         .secondary-btn {
-            background: #718093;
+            background: #475569;
+            color: #fff;
             margin-top: 8px;
         }
+        .secondary-btn:active { background: #334155; }
 
         .summary-box {
-            font-size: 16px;
-            font-weight: bold;
-            color: #2ea6ff;
+            font-size: 15px;
+            font-weight: 600;
+            color: #38bdf8;
             margin-bottom: 15px;
             text-align: center;
-            background: rgba(46, 166, 255, 0.1);
-            padding: 10px;
-            border-radius: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
         }
     </style>
 </head>
@@ -152,7 +175,12 @@
             <h2>🎰 Выбор устройства</h2>
             
             <div class="slot-machine">
-                <div style="font-size: 12px; color: #aaa; margin-bottom: 5px;">ПРОКРУТИТЕ ДЛЯ ВЫБОРА</div>
+                <div style="font-size: 11px; color: #94a3b8; margin-bottom: 10px; letter-spacing: 1px;">КОЛЕСО УСТРОЙСТВ</div>
+                
+                <div class="slot-image-container">
+                    <img id="slot-item-image" src="" alt="Устройство">
+                </div>
+                
                 <div id="slot-item-name" class="slot-display">Загрузка...</div>
                 <div id="slot-item-price" class="slot-price">0 ₸</div>
                 
@@ -190,7 +218,7 @@
             <input type="text" id="cust-address" placeholder="Адрес доставки">
             <input type="text" id="cust-comment" placeholder="Комментарий (необязательно)">
 
-            <p style="text-align: center; font-size: 18px;"><strong>Итого: <span id="total-price">0</span> ₸</strong></p>
+            <p style="text-align: center; font-size: 18px; margin: 15px 0;"><strong>Итого: <span id="total-price" style="color: #4ade80;">0</span> ₸</strong></p>
 
             <button class="main-btn" onclick="submitOrder()">Отправить заказ</button>
             <button class="main-btn secondary-btn" onclick="showStep('step-flavor')">Назад к вкусам</button>
@@ -198,8 +226,7 @@
     </div>
 
     <script>
-        // ВНИМАНИЕ: Если тестируешь локально — поставь "http://127.0.0.1:8000". 
-        // Для бота с туннелем укажи текущую ссылку (например, loca.lt).
+        // Ссылка на ваш сервер (включенный туннель или VDS)
         const API_URL = "https://nine-socks-own.loca.lt";
 
         let catalogData = [];
@@ -207,13 +234,11 @@
         let selectedDevice = null;
         let finalCartItem = null;
 
-        // Инициализация Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
         }
 
-        // Загрузка каталога с сервера (main.py -> /api/catalog)
         async function loadCatalog() {
             try {
                 let response = await fetch(`${API_URL}/api/catalog`);
@@ -236,12 +261,22 @@
             }
         }
 
-        // Логика барабана (перелистывание вперед/назад)
         function updateSlotDisplay() {
             if (catalogData.length === 0) return;
             let item = catalogData[currentIndex];
+            
             document.getElementById('slot-item-name').innerText = item.name;
             document.getElementById('slot-item-price').innerText = `${item.price} ₸`;
+            
+            let imgElement = document.getElementById('slot-item-image');
+            if (item.image_url) {
+                let imgUrl = item.image_url.startsWith('http') ? item.image_url : API_URL + item.image_url;
+                imgElement.src = imgUrl;
+                imgElement.style.display = 'block';
+            } else {
+                imgElement.src = "";
+                imgElement.style.display = 'none';
+            }
         }
 
         function nextDevice() {
@@ -256,7 +291,6 @@
             updateSlotDisplay();
         }
 
-        // Переход с шага барабана на шаг выбора вкуса
         function confirmDevice() {
             if (catalogData.length === 0) {
                 alert('Нет доступных устройств!');
@@ -266,7 +300,6 @@
             selectedDevice = catalogData[currentIndex];
             document.getElementById('selected-device-info').innerText = `${selectedDevice.name} — ${selectedDevice.price} ₸`;
 
-            // Заполняем выпадающий список вкусов для выбранного устройства
             let flavorSelect = document.getElementById('flavor-select');
             flavorSelect.innerHTML = '';
 
@@ -287,7 +320,6 @@
             showStep('step-flavor');
         }
 
-        // Переход к оформлению заказа
         function goToCheckout() {
             let flavorSelect = document.getElementById('flavor-select');
             let qtyInput = document.getElementById('qty-input');
@@ -295,7 +327,6 @@
             let flavor = flavorSelect.value;
             let quantity = parseInt(qtyInput.value) || 1;
             
-            // Чистим цену от символов для расчёта суммы
             let numericPrice = parseFloat(String(selectedDevice.price).replace(/[^0-9.]/g, '')) || 0;
             let total = numericPrice * quantity;
 
@@ -312,13 +343,11 @@
             showStep('step-checkout');
         }
 
-        // Управление переключением шагов интерфейса
         function showStep(stepId) {
             document.querySelectorAll('.step-card').forEach(el => el.classList.remove('active'));
             document.getElementById(stepId).classList.add('active');
         }
 
-        // Отправка заказа на сервер (main.py -> /api/orders/create)
         async function submitOrder() {
             let name = document.getElementById('cust-name').value.trim();
             let phone = document.getElementById('cust-phone').value.trim();
@@ -366,7 +395,6 @@
             }
         }
 
-        // Запуск при открытии страницы
         loadCatalog();
     </script>
 </body>
