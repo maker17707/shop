@@ -2,621 +2,662 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Оформление заказа</title>
-    <!-- Подключение Telegram Web App SDK -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>РАЗКИ КОСТАНАЙ</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         :root {
-            --bg-color: var(--tg-theme-bg-color, #ffffff);
-            --text-color: var(--tg-theme-text-color, #222222);
-            --hint-color: var(--tg-theme-hint-color, #888888);
-            --button-color: var(--tg-theme-button-color, #2481cc);
-            --button-text-color: var(--tg-theme-button-text-color, #ffffff);
-            --secondary-bg-color: var(--tg-theme-secondary-bg-color, #f1f1f3);
-            --card-border: var(--tg-theme-secondary-bg-color, #e4e4e7);
-            --accent-color: #3b82f6;
-            --danger-color: #ef4444;
-            --success-color: #10b981;
+            --bg-color: #0d0d11;
+            --text-color: #ffffff;
+            --neon-pink: #ff007f;
+            --neon-blue: #00f3ff;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            user-select: none;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            padding: 16px;
-            padding-bottom: 80px;
-            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            overflow-x: hidden;
+            padding: 15px 0;
         }
 
+        /* Двужильный неон: РАЗКИ розовый, КОСТАНАЙ голубой */
         header {
-            margin-bottom: 20px;
             text-align: center;
+            z-index: 10;
+            margin-bottom: 10px;
         }
 
-        h1 {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 6px;
+        header h1 {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.1;
         }
 
-        .subtitle {
-            font-size: 14px;
-            color: var(--hint-color);
+        .logo-rasky {
+            color: #fff;
+            text-shadow: 
+                0 0 4px #fff,
+                0 0 10px var(--neon-pink),
+                0 0 20px var(--neon-pink),
+                0 0 40px var(--neon-pink),
+                0 0 80px var(--neon-pink);
         }
 
-        /* Навигация / Шаги */
+        .logo-kostanay {
+            color: #fff;
+            text-shadow: 
+                0 0 4px #fff,
+                0 0 10px var(--neon-blue),
+                0 0 20px var(--neon-blue),
+                0 0 40px var(--neon-blue),
+                0 0 80px var(--neon-blue);
+            margin-top: 4px;
+        }
+
+        header p {
+            font-size: 13px;
+            color: #8a8a9e;
+            margin-top: 6px;
+        }
+
         .step-container {
-            display: none;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex: 1;
         }
 
-        .step-container.active {
-            display: block;
-            animation: fadeIn 0.3s ease-in-out;
+        .step {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .step.active {
+            display: flex;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Сетка каталога */
-        .catalog-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
+        .swiper {
+            width: 100%;
+            padding-top: 5px;
+            padding-bottom: 25px;
         }
 
-        .item-card {
-            background-color: var(--secondary-bg-color);
-            border: 2px solid transparent;
-            border-radius: 16px;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
+        .swiper-slide {
+            background-position: center;
+            background-size: cover;
+            width: 260px;
+            height: 380px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .item-card:active {
-            transform: scale(0.97);
-        }
-
-        .item-card.selected {
-            border-color: var(--button-color);
-            background-color: rgba(36, 129, 204, 0.05);
-        }
-
-        .item-image-wrapper {
-            width: 100%;
-            height: 110px;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 10px;
-            background-color: #ddd;
-            display: flex;
             align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .device-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
             justify-content: center;
         }
 
-        .item-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .device-card img {
+            width: 150px;
+            height: 170px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
+            transition: transform 0.3s ease;
         }
 
-        .item-name {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text-color);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        .swiper-slide-active .device-card img {
+            transform: scale(1.06);
         }
 
-        .item-price {
-            font-size: 13px;
+        .device-title {
+            margin-top: 10px;
+            font-size: 18px;
             font-weight: 700;
-            color: var(--button-color);
+            text-align: center;
+            padding: 0 10px;
         }
 
-        /* Форма заказа */
+        .device-puffs {
+            font-size: 13px;
+            color: var(--neon-blue);
+            font-weight: 600;
+            margin-top: 4px;
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.4);
+        }
+
+        .device-price {
+            margin-top: 6px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #39ff14;
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+        }
+
+        .neon-podium {
+            width: 220px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--neon-color);
+            box-shadow: 0 0 25px 8px var(--neon-glow), 0 0 50px 15px var(--neon-glow);
+            transition: background 0.5s ease, box-shadow 0.5s ease;
+            margin-top: -10px;
+            z-index: 2;
+        }
+
+        .flavor-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            width: 82%;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .swiper-slide-active .flavor-card {
+            border-color: var(--neon-color);
+            box-shadow: 0 0 25px var(--neon-glow), inset 0 0 15px rgba(255, 255, 255, 0.1);
+            transform: scale(1.03);
+        }
+
+        .flavor-name {
+            font-size: 21px;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            line-height: 1.3;
+        }
+
+        .flavor-stock {
+            font-size: 13px;
+            color: #39ff14;
+            font-weight: 600;
+            margin-top: 12px;
+            background: rgba(57, 255, 20, 0.1);
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            padding: 6px 14px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .order-form-container {
+            width: 90%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
         .form-group {
-            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .form-label {
-            display: block;
-            font-size: 13px;
+            font-size: 12px;
+            color: #b0b0c3;
             font-weight: 600;
-            color: var(--hint-color);
-            margin-bottom: 6px;
+            padding-left: 4px;
         }
 
-        .form-input, .form-textarea {
-            width: 100%;
-            padding: 12px 14px;
-            background-color: var(--secondary-bg-color);
-            border: 1px solid transparent;
-            border-radius: 12px;
-            color: var(--text-color);
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-input:focus, .form-textarea:focus {
-            border-color: var(--button-color);
-        }
-
-        .form-textarea {
-            resize: none;
-            height: 80px;
-        }
-
-        /* Кнопки */
-        .btn-group {
+        .phone-input-wrapper {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 8px;
         }
 
-        .btn {
-            flex: 1;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            transition: opacity 0.2s;
-        }
-
-        .btn:active {
-            opacity: 0.8;
-        }
-
-        .btn-primary {
-            background-color: var(--button-color);
-            color: var(--button-text-color);
-        }
-
-        .btn-secondary {
-            background-color: var(--secondary-bg-color);
-            color: var(--text-color);
-        }
-
-        .btn-danger {
-            background-color: var(--danger-color);
-            color: #ffffff;
-        }
-
-        /* Экран успеха / статуса заказа */
-        .success-screen {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .success-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-        }
-
-        .success-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .success-desc {
+        .country-code {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 12px 10px;
+            border-radius: 14px;
             font-size: 14px;
-            color: var(--hint-color);
-            margin-bottom: 24px;
-            line-height: 1.5;
-        }
-
-        /* Лоадер */
-        .loader-container {
+            font-weight: 600;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 50px 0;
+            min-width: 75px;
         }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--secondary-bg-color);
-            border-top: 4px solid var(--button-color);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-bottom: 12px;
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 15px;
+            outline: none;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .form-group input:focus {
+            border-color: var(--neon-blue);
         }
 
-        /* Выбранные элементы-сводки */
-        .summary-box {
-            background-color: var(--secondary-bg-color);
+        .form-hint {
+            font-size: 11px;
+            color: #8a8a9e;
+            padding-left: 4px;
+            line-height: 1.2;
+        }
+
+        .payment-notice {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px dashed rgba(0, 243, 255, 0.3);
             border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
-
-        .summary-row:last-child {
-            margin-bottom: 0;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #00f3ff;
+            text-align: center;
             font-weight: 600;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #00f3ff, #0066ff);
+            color: #fff;
+            border: none;
+            padding: 15px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+            transition: transform 0.2s ease;
+            margin-top: 10px;
+            z-index: 10;
+            width: 85%;
+            max-width: 320px;
+        }
+
+        .btn-action:active {
+            transform: scale(0.96);
+        }
+
+        .btn-action:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:active {
+            transform: scale(0.95);
+        }
+        
+        .loading {
+            color: #8a8a9e;
+            font-size: 15px;
+            margin-top: 50px;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1 id="main-title">Каталог товаров</h1>
-        <div class="subtitle" id="main-subtitle">Выберите устройство для продолжения</div>
+        <h1>
+            <span class="logo-rasky">РАЗКИ</span>
+            <span class="logo-kostanay">КОСТАНАЙ</span>
+        </h1>
+        <p id="step-subtitle">Шаг 1: Выберите устройство</p>
     </header>
 
-    <!-- ШАГ 1: ВЫБОР УСТРОЙСТВА -->
-    <div id="step-devices" class="step-container active">
-        <div id="devices-loader" class="loader-container">
-            <div class="spinner"></div>
-            <div class="subtitle">Загрузка каталога...</div>
-        </div>
-        <div class="catalog-grid" id="devices-grid">
-            <!-- Динамически заполняется через JS -->
-        </div>
-    </div>
-
-    <!-- ШАГ 2: ВЫБОР ВКУСА -->
-    <div id="step-flavors" class="step-container">
-        <div id="flavors-loader" class="loader-container" style="display: none;">
-            <div class="spinner"></div>
-            <div class="subtitle">Загрузка вкусов...</div>
-        </div>
-        <div class="catalog-grid" id="flavors-grid">
-            <!-- Динамически заполняется через JS -->
-        </div>
-        <div class="btn-group">
-            <button class="btn btn-secondary" onclick="goToStep('devices')">Назад</button>
-        </div>
-    </div>
-
-    <!-- ШАГ 3: ФОРМА КОНТАКТНЫХ ДАННЫХ -->
-    <div id="step-checkout" class="step-container">
-        <div class="summary-box" id="order-summary">
-            <!-- Сводка выбранного товара -->
-        </div>
-
-        <div class="form-group">
-            <label class="form-label" for="input-name">Ваше имя</label>
-            <input type="text" id="input-name" class="form-input" placeholder="Введите ваше имя">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label" for="input-phone">Номер телефона</label>
-            <input type="tel" id="input-phone" class="form-input" placeholder="+7 (___) ___-__-__">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label" for="input-address">Адрес доставки</label>
-            <input type="text" id="input-address" class="form-input" placeholder="Город, улица, дом, квартира">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label" for="input-comment">Комментарий к заказу</label>
-            <textarea id="input-comment" class="form-textarea" placeholder="Оставьте примечание, если необходимо..."></textarea>
-        </div>
-
-        <div class="btn-group">
-            <button class="btn btn-secondary" onclick="goToStep('flavors')">Назад</button>
-            <button class="btn btn-primary" id="btn-submit-order" onclick="submitOrder()">Оформить</button>
-        </div>
-    </div>
-
-    <!-- ШАГ 4: УСПЕХ И ОТМЕНА ЗАКАЗА -->
-    <div id="step-success" class="step-container">
-        <div class="success-screen">
-            <div class="success-icon">🎉</div>
-            <div class="success-title">Заказ успешно оформлен!</div>
-            <div class="success-desc" id="success-desc-text">
-                Ваш заказ передан администратору. Мы свяжемся с вами в ближайшее время для подтверждения.
+    <div class="step-container">
+        <!-- ШАГ 1: ВЫБОР УСТРОЙСТВА -->
+        <div class="step active" id="step-device">
+            <div class="swiper deviceSwiper">
+                <div class="swiper-wrapper" id="device-list">
+                    <div class="swiper-slide"><div class="loading">Загрузка каталога...</div></div>
+                </div>
             </div>
-            <div class="btn-group" style="flex-direction: column;">
-                <button class="btn btn-danger" onclick="cancelOrder()">Отменить заказ</button>
-                <button class="btn btn-secondary" onclick="closeWebApp()">Закрыть приложение</button>
+            <button class="btn-action" onclick="confirmDevice()">Выбрать устройство</button>
+        </div>
+
+        <!-- ШАГ 2: ВЫБОР ВКУСА -->
+        <div class="step" id="step-flavor">
+            <button class="btn-back" onclick="goBackToDevices()">← Назад к устройствам</button>
+            <div class="swiper flavorSwiper">
+                <div class="swiper-wrapper" id="flavor-list"></div>
             </div>
+            <div class="neon-podium" id="neon-glow"></div>
+            <button class="btn-action" onclick="confirmFlavor()">Выбрать вкус</button>
+        </div>
+
+        <!-- ШАГ 3: ОФОРМЛЕНИЕ ЗАКАЗА -->
+        <div class="step" id="step-order">
+            <button class="btn-back" onclick="goBackToFlavors()">← Назад к вкусам</button>
+            
+            <div class="order-form-container">
+                <div class="form-group">
+                    <label class="form-label">Введите ваше имя</label>
+                    <input type="text" id="cust-name" placeholder="Например, Алексей">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Номер телефона WhatsApp</label>
+                    <div class="phone-input-wrapper">
+                        <div class="country-code">🇰🇿 +7</div>
+                        <input type="tel" id="cust-phone" placeholder="(705) 123-45-67" maxlength="15">
+                    </div>
+                    <span class="form-hint">Курьер свяжется с вами посредством аудиозвонка на WhatsApp. Указывайте зарегистрированный номер.</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Адрес доставки</label>
+                    <input type="text" id="cust-address" list="locations-list" placeholder="Выберите или введите адрес">
+                    <datalist id="locations-list">
+                        <option value="г. Костанай">
+                        <option value="г. Рудный">
+                        <option value="п. Затобольск (Тобыл)">
+                        <option value="г. Тобыл">
+                    </datalist>
+                    <span class="form-hint">Доставка по г. Костанай, Рудный, Затоболовка, г. Тобыл.</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Комментарий (необязательно)</label>
+                    <input type="text" id="cust-comment" placeholder="Подъезд, этаж, домофон">
+                </div>
+
+                <div class="payment-notice">
+                    💵 Оплата исключительно наличными при получении
+                </div>
+            </div>
+
+            <button class="btn-action" id="submit-btn" onclick="submitOrder()">Оформить заказ</button>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
-        // Инициализация Telegram Web App
+        const API_BASE_URL = "https://tired-experts-repeat.loca.lt";
+
+        const deviceImages = {
+            "WAKA soPRO BOOST 20000": "https://raw.githubusercontent.com/maker17707/shop/main/sopro20000.png",
+            "PA 10000": "https://raw.githubusercontent.com/maker17707/shop/main/pa10000.png",
+            "Slim 8000": "https://raw.githubusercontent.com/maker17707/shop/main/slim8000.png"
+        };
+
+        const flavorColors = {
+            "КЛУБНИКА, МАЛИНА": "#ff2a6d",
+            "ПЕРСИК, МАЛИНА": "#ff7700",
+            "ЧЕРНИКА, МАЛИНА, МЕТОЛ": "#7b2cbf",
+            "АРБУЗ": "#00ff66",
+            "КЛУБНИКА, КИВИ": "#b4ff39",
+            "ЕЖЕВИКА, ЧЕРНИКА, МАЛИНА": "#4361ee",
+            "КЛУБНИКА, АРБУЗ": "#ff0054",
+            "АРБУЗ, ВИШНЯ": "#d90429",
+            "САКУРА, ВИНОГРАД": "#9d4edd",
+            "КИВИ, МАРАКУЙЯ, ГУАВА": "#ffb703"
+        };
+
         const tg = window.Telegram?.WebApp;
         if (tg) {
             tg.expand();
             tg.ready();
         }
 
-        // Основной URL API (пустая строка означает текущий домен сервера, либо пропишите точный адрес)
-        const API_BASE_URL = 'https://tired-experts-repeat.loca.lt';
+        let catalogData = [];
+        let selectedDevice = null;
+        let selectedFlavor = null;
+        let deviceSwiper = null;
+        let flavorSwiper = null;
 
-        // Данные текущего заказа
-        let currentOrder = {
-            device: null,
-            flavor: null
-        };
-
-        let createdOrderId = null;
-
-        // Данные каталога в памяти
-        let catalogDevices = [];
-        let catalogFlavors = {};
-
-        // Управление шагами интерфейса
-        function goToStep(stepName) {
-            document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
-
-            const titleEl = document.getElementById('main-title');
-            const subtitleEl = document.getElementById('main-subtitle');
-
-            if (stepName === 'devices') {
-                document.getElementById('step-devices').classList.add('active');
-                titleEl.innerText = 'Каталог устройств';
-                subtitleEl.innerText = 'Выберите устройство для продолжения';
-            } else if (stepName === 'flavors') {
-                document.getElementById('step-flavors').classList.add('active');
-                titleEl.innerText = 'Выбор вкуса';
-                subtitleEl.innerText = currentOrder.device ? currentOrder.device.name : 'Выберите вкус';
-            } else if (stepName === 'checkout') {
-                document.getElementById('step-checkout').classList.add('active');
-                titleEl.innerText = 'Оформление заказа';
-                subtitleEl.innerText = 'Укажите контактные данные';
-                renderSummary();
-            } else if (stepName === 'success') {
-                document.getElementById('step-success').classList.add('active');
-                titleEl.innerText = 'Заказ принят';
-                subtitleEl.innerText = '';
+        function extractPuffs(name) {
+            const match = name.match(/\d+/g);
+            if (match) {
+                const numbers = match.map(Number);
+                const maxNum = Math.max(...numbers);
+                if (maxNum > 100) return `${maxNum} затяжек`;
             }
+            return "";
         }
 
-        // Загрузка каталога с сервера
-        async function fetchCatalog() {
-            const loader = document.getElementById('devices-loader');
-            const grid = document.getElementById('devices-grid');
-            loader.style.display = 'flex';
-            grid.innerHTML = '';
-
+        async function loadCatalog() {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/catalog`);
-                if (!response.ok) throw new Error('Ошибка сервера при загрузке каталога');
-                
-                const data = await response.json();
-                catalogDevices = data.devices || [];
-                catalogFlavors = data.flavors || {};
-                
+                if (!response.ok) throw new Error('Ошибка сервера');
+                catalogData = await response.json();
                 renderDevices();
             } catch (error) {
-                console.error('Ошибка:', error);
-                // Запасные тестовые данные на случай отсутствия связи при отладке
-                catalogDevices = [
-                    { id: 1, name: 'Демо Устройство 1', price: 1500, image: 'https://via.placeholder.com/150' },
-                    { id: 2, name: 'Демо Устройство 2', price: 2000, image: 'https://via.placeholder.com/150' }
-                ];
-                catalogFlavors = {
-                    1: [{ id: 101, name: 'Мята' }, { id: 102, name: 'Ягоды' }],
-                    2: [{ id: 201, name: 'Манго' }, { id: 202, name: 'Арбуз' }]
-                };
-                renderDevices();
-            } finally {
-                loader.style.display = 'none';
+                console.error('Не удалось загрузить каталог:', error);
+                document.getElementById('device-list').innerHTML = '<div class="swiper-slide"><div class="loading">Ошибка загрузки каталога</div></div>';
             }
         }
 
-        // Рендер списка устройств
         function renderDevices() {
-            const grid = document.getElementById('devices-grid');
-            grid.innerHTML = '';
-
-            catalogDevices.forEach(device => {
-                const card = document.createElement('div');
-                card.className = `item-card ${currentOrder.device?.id === device.id ? 'selected' : ''}`;
-                card.onclick = () => selectDevice(device);
-                
-                card.innerHTML = `
-                    <div>
-                        <div class="item-image-wrapper">
-                            <img class="item-image" src="${device.image || 'https://via.placeholder.com/150'}" alt="${device.name}">
-                        </div>
-                        <div class="item-name">${device.name}</div>
-                    </div>
-                    <div class="item-price">${device.price} руб.</div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        // Выбор устройства
-        function selectDevice(device) {
-            currentOrder.device = device;
-            currentOrder.flavor = null; // Сбрасываем вкус при смене устройства
-            renderDevices();
-            renderFlavors(device.id);
-            goToStep('flavors');
-        }
-
-        // Рендер вкусов для устройства
-        function renderFlavors(deviceId) {
-            const grid = document.getElementById('flavors-grid');
-            const loader = document.getElementById('flavors-loader');
-            grid.innerHTML = '';
-            loader.style.display = 'none';
-
-            const flavors = catalogFlavors[deviceId] || [];
-            
-            if (flavors.length === 0) {
-                grid.innerHTML = '<div class="subtitle" style="grid-column: span 2; text-align: center;">Нет доступных вкусов</div>';
+            if (!catalogData.length) {
+                document.getElementById('device-list').innerHTML = '<div class="swiper-slide"><div class="loading">Нет товаров в наличии</div></div>';
                 return;
             }
 
-            flavors.forEach(flavor => {
-                const card = document.createElement('div');
-                card.className = `item-card ${currentOrder.flavor?.id === flavor.id ? 'selected' : ''}`;
-                card.onclick = () => selectFlavor(flavor);
+            const container = document.getElementById('device-list');
+            container.innerHTML = catalogData.map(dev => {
+                const imageUrl = deviceImages[dev.name] || 'https://via.placeholder.com/150x170/1a1a24/ffffff?text=' + encodeURIComponent(dev.name);
+                const puffsText = extractPuffs(dev.name);
                 
-                card.innerHTML = `
-                    <div style="padding: 10px 0;">
-                        <div class="item-name" style="text-align: center; margin-bottom: 0;">${flavor.name}</div>
+                return `
+                <div class="swiper-slide">
+                    <div class="device-card">
+                        <img src="${imageUrl}" alt="${dev.name}">
+                        <div class="device-title">${dev.name}</div>
+                        ${puffsText ? `<div class="device-puffs">${puffsText}</div>` : ''}
+                        <div class="device-price">${dev.price}</div>
                     </div>
+                </div>
                 `;
-                grid.appendChild(card);
+            }).join('');
+
+            deviceSwiper = new Swiper('.deviceSwiper', {
+                effect: 'coverflow',
+                grabCursor: true,
+                centeredSlides: true,
+                slidesPerView: 'auto',
+                coverflowEffect: { rotate: 35, stretch: 0, depth: 160, modifier: 1, slideShadows: false },
+                on: { slideChange: () => triggerHaptic() }
             });
         }
 
-        // Выбор вкуса
-        function selectFlavor(flavor) {
-            currentOrder.flavor = flavor;
-            goToStep('checkout');
-        }
-
-        // Отображение сводки заказа на шаге чекаута
-        function renderSummary() {
-            const summaryBox = document.getElementById('order-summary');
-            const devName = currentOrder.device ? currentOrder.device.name : '—';
-            const devPrice = currentOrder.device ? currentOrder.device.price + ' руб.' : '0 руб.';
-            const flavorName = currentOrder.flavor ? currentOrder.flavor.name : '—';
-
-            summaryBox.innerHTML = `
-                <div class="summary-row"><span>Устройство:</span> <strong>${devName}</strong></div>
-                <div class="summary-row"><span>Вкус:</span> <strong>${flavorName}</strong></div>
-                <div class="summary-row"><span>Итого к оплате:</span> <strong>${devPrice}</strong></div>
+        function renderFlavors(flavors) {
+            const container = document.getElementById('flavor-list');
+            container.innerHTML = flavors.map(fl => {
+                const upperName = fl.name.toUpperCase().trim();
+                const color = flavorColors[upperName] || '#00f3ff';
+                
+                return `
+                <div class="swiper-slide">
+                    <div class="flavor-card" style="background: linear-gradient(135deg, ${color}25, rgba(255,255,255,0.03));">
+                        <div class="flavor-name">${fl.name}</div>
+                        <div class="flavor-stock">✓ В наличии</div>
+                    </div>
+                </div>
             `;
+            }).join('');
+
+            if (flavorSwiper) flavorSwiper.destroy();
+
+            flavorSwiper = new Swiper('.flavorSwiper', {
+                effect: 'coverflow',
+                grabCursor: true,
+                centeredSlides: true,
+                slidesPerView: 'auto',
+                coverflowEffect: { rotate: 30, stretch: 0, depth: 120, modifier: 1, slideShadows: false },
+                on: {
+                    init: function () { updateNeonGlow(flavors[this.activeIndex]); },
+                    slideChange: function () {
+                        triggerHaptic();
+                        updateNeonGlow(flavors[this.activeIndex]);
+                    }
+                }
+            });
         }
 
-        // Отправка заказа на сервер
-        async function submitOrder() {
-            const name = document.getElementById('input-name').value.trim();
-            const phone = document.getElementById('input-phone').value.trim();
-            const address = document.getElementById('input-address').value.trim();
-            const comment = document.getElementById('input-comment').value.trim();
+        function updateNeonGlow(flavor) {
+            if (!flavor) return;
+            const podium = document.getElementById('neon-glow');
+            const upperName = flavor.name.toUpperCase().trim();
+            const color = flavorColors[upperName] || '#00f3ff';
+            
+            podium.style.setProperty('--neon-color', color);
+            podium.style.setProperty('--neon-glow', color + 'cc');
+        }
 
-            if (!name || !phone || !address) {
-                alert('Пожалуйста, заполните все обязательные поля (имя, телефон, адрес)');
+        function triggerHaptic() {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+        }
+
+        function confirmDevice() {
+            if (!catalogData.length) return;
+            selectedDevice = catalogData[deviceSwiper.activeIndex];
+            document.getElementById('step-subtitle').innerText = `${selectedDevice.name} — Выберите вкус`;
+            document.getElementById('step-device').classList.remove('active');
+            document.getElementById('step-flavor').classList.add('active');
+            renderFlavors(selectedDevice.flavors);
+        }
+
+        function goBackToDevices() {
+            document.getElementById('step-subtitle').innerText = 'Шаг 1: Выберите устройство';
+            document.getElementById('step-flavor').classList.remove('active');
+            document.getElementById('step-device').classList.add('active');
+        }
+
+        function confirmFlavor() {
+            selectedFlavor = selectedDevice.flavors[flavorSwiper.activeIndex];
+            document.getElementById('step-subtitle').innerText = 'Оформление заказа';
+            document.getElementById('step-flavor').classList.remove('active');
+            document.getElementById('step-order').classList.add('active');
+        }
+
+        function goBackToFlavors() {
+            document.getElementById('step-subtitle').innerText = `${selectedDevice.name} — Выберите вкус`;
+            document.getElementById('step-order').classList.remove('active');
+            document.getElementById('step-flavor').classList.add('active');
+        }
+
+        async function submitOrder() {
+            const name = document.getElementById('cust-name').value.trim();
+            const rawPhone = document.getElementById('cust-phone').value.trim();
+            const address = document.getElementById('cust-address').value.trim();
+            const comment = document.getElementById('cust-comment').value.trim();
+
+            if (!name || !rawPhone || !address) {
+                alert('Пожалуйста, заполните имя, телефон и адрес!');
                 return;
             }
 
-            const submitBtn = document.getElementById('btn-submit-order');
+            const phone = "+7" + rawPhone.replace(/[^\d]/g, '');
+
+            const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
             submitBtn.innerText = 'Отправка...';
 
-            const payload = {
-                telegram_id: tg?.initDataUnsafe?.user?.id || null,
-                username: tg?.initDataUnsafe?.user?.username || null,
-                device: currentOrder.device,
-                flavor: currentOrder.flavor,
-                customer: {
-                    name: name,
-                    phone: phone,
-                    address: address,
-                    comment: comment
-                }
+            const cleanPrice = parseFloat(selectedDevice.price.replace(/[^\d]/g, '')) || 0;
+
+            const orderData = {
+                customer_name: name,
+                whatsapp_phone: phone,
+                address: address,
+                items: [
+                    {
+                        model: selectedDevice.name,
+                        flavor: selectedFlavor.name,
+                        quantity: 1,
+                        selling_price: cleanPrice
+                    }
+                ],
+                total_price: cleanPrice,
+                payment_type: "Наличные при получении",
+                comment: comment
             };
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/order`, {
+                const response = await fetch(`${API_BASE_URL}/api/orders/create`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    createdOrderId = result.order_id;
-                    document.getElementById('success-desc-text').innerText = 
-                        `Заказ №${createdOrderId} успешно создан и передан администратору. Ожидайте подтверждения.`;
-                    goToStep('success');
-                } else {
-                    alert('Ошибка при оформлении: ' + (result.error || 'попробуйте снова'));
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = 'Оформить';
-                }
-            } catch (error) {
-                console.error('Ошибка сети:', error);
-                alert('Не удалось связаться с сервером. Проверьте соединение.');
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'Оформить';
-            }
-        }
-
-        // Запрос на отмену созданного заказа
-        async function cancelOrder() {
-            if (!createdOrderId) {
-                alert('Нет активного созданного заказа для отмены');
-                return;
-            }
-
-            if (!confirm('Вы действительно хотите отменить этот заказ?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/orders/${createdOrderId}/cancel`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
                 });
 
                 if (response.ok) {
-                    alert('Запрос на отмену отправлен администратору.');
-                    closeWebApp();
+                    const result = await response.json();
+                    alert(`✅ Заказ #${result.order_id} успешно оформлен! Ожидайте аудиозвонок курьера на WhatsApp.`);
+                    if (tg) tg.close();
                 } else {
-                    alert('Не удалось выполнить отмену заказа.');
+                    alert('Ошибка при оформлении заказа. Попробуйте еще раз.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Оформление заказа';
                 }
-            } catch (error) {
-                console.error('Ошибка сети при отмене:', error);
-                alert('Ошибка сети при попытке отмены.');
+            } catch (e) {
+                console.error(e);
+                alert('Ошибка соединения с сервером.');
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Оформление заказа';
             }
         }
 
-        // Закрытие Web App
-        function closeWebApp() {
-            if (tg) {
-                tg.close();
-            } else {
-                window.close();
-            }
-        }
-
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchCatalog();
-        });
+        loadCatalog();
     </script>
 </body>
 </html>
