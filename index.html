@@ -24,7 +24,8 @@
 
         h1, h2 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            font-size: 20px;
         }
 
         .step-card {
@@ -47,77 +48,97 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Стиль игрового барабана */
-        .slot-machine {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            border-radius: 16px;
-            padding: 20px;
-            color: #fff;
-            text-align: center;
-            margin-bottom: 20px;
-            border: 2px solid #38bdf8;
-            box-shadow: inset 0 0 15px rgba(56, 189, 248, 0.2), 0 5px 15px rgba(0,0,0,0.4);
+        /* iOS-стиль барабана (picker) */
+        .ios-picker-wrapper {
             position: relative;
+            height: 180px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            margin-bottom: 15px;
         }
 
-        .slot-image-container {
-            width: 130px;
-            height: 130px;
-            margin: 0 auto 15px auto;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.05);
+        /* Центральная подсветка барабана */
+        .ios-picker-highlight {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            right: 10px;
+            transform: translateY(-50%);
+            height: 50px;
+            background: rgba(56, 189, 248, 0.15);
+            border: 2px solid #38bdf8;
+            border-radius: 10px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .ios-picker-list {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: scroll;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+            padding: 65px 0; /* Центрирование элементов */
+            z-index: 1;
+        }
+
+        .ios-picker-list::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .ios-picker-item {
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 16px;
+            font-weight: 600;
+            color: #94a3b8;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            text-align: center;
+            padding: 0 10px;
         }
 
-        .slot-image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            transition: transform 0.2s ease;
-        }
-
-        .slot-display {
-            font-size: 20px;
-            font-weight: 800;
-            padding: 12px;
-            background: rgba(56, 189, 248, 0.1);
-            border-radius: 10px;
-            margin-bottom: 10px;
-            min-height: 25px;
+        .ios-picker-item.selected {
             color: #38bdf8;
+            font-size: 18px;
+            font-weight: 800;
+            transform: scale(1.05);
         }
 
-        .slot-price {
+        /* Контейнер для картинки выбранного устройства */
+        .device-preview-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .device-image {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 5px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .price-tag {
             font-size: 18px;
             font-weight: bold;
             color: #4ade80;
-            margin-bottom: 20px;
+            text-align: center;
+            margin-bottom: 15px;
         }
 
-        .slot-controls {
-            display: flex;
-            gap: 12px;
-        }
-
-        .slot-btn {
-            flex: 1;
-            background: #38bdf8;
-            color: #0f172a;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .slot-btn:active { background: #0ea5e9; }
-
-        select, input {
+        input {
             width: 100%;
             padding: 12px;
             margin-top: 8px;
@@ -140,7 +161,7 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 5px;
             transition: background 0.2s;
         }
         .main-btn:active { background: #0ea5e9; }
@@ -153,13 +174,13 @@
         .secondary-btn:active { background: #334155; }
 
         .summary-box {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             color: #38bdf8;
             margin-bottom: 15px;
             text-align: center;
             background: rgba(56, 189, 248, 0.1);
-            padding: 12px;
+            padding: 10px;
             border-radius: 10px;
             border: 1px solid rgba(56, 189, 248, 0.2);
         }
@@ -170,42 +191,42 @@
     <div class="container">
         <h1>🛍️ Магазин Vaka</h1>
 
-        <!-- ШАГ 1: Барабан выбора устройства -->
+        <!-- ШАГ 1: Барабан устройств (iOS стиль) -->
         <div id="step-device" class="step-card active">
-            <h2>🎰 Выбор устройства</h2>
+            <h2>🎰 Выберите устройство</h2>
             
-            <div class="slot-machine">
-                <div style="font-size: 11px; color: #94a3b8; margin-bottom: 10px; letter-spacing: 1px;">КОЛЕСО УСТРОЙСТВ</div>
-                
-                <div class="slot-image-container">
-                    <img id="slot-item-image" src="" alt="Устройство">
-                </div>
-                
-                <div id="slot-item-name" class="slot-display">Загрузка...</div>
-                <div id="slot-item-price" class="slot-price">0 ₸</div>
-                
-                <div class="slot-controls">
-                    <button class="slot-btn" onclick="prevDevice()">⬅️ Назад</button>
-                    <button class="slot-btn" onclick="nextDevice()">Вперед ➡️</button>
-                </div>
+            <!-- Картинка выбранного устройства -->
+            <div class="device-preview-container">
+                <img id="device-img" class="device-image" src="" alt="Устройство" onerror="this.style.display='none'">
+            </div>
+            
+            <div id="device-price" class="price-tag">0 ₸</div>
+
+            <!-- iOS Колесо прокрутки -->
+            <div class="ios-picker-wrapper">
+                <div class="ios-picker-highlight"></div>
+                <div id="device-picker-list" class="ios-picker-list" onscroll="handleDeviceScroll()"></div>
             </div>
 
-            <button class="main-btn" onclick="confirmDevice()">Выбрать это устройство</button>
+            <button class="main-btn" onclick="confirmDevice()">Выбрать устройство</button>
         </div>
 
-        <!-- ШАГ 2: Выбор вкуса -->
+        <!-- ШАГ 2: Барабан вкусов (iOS стиль) -->
         <div id="step-flavor" class="step-card">
-            <h2>🍏 Выбор вкуса</h2>
+            <h2>🍏 Выберите вкус</h2>
             <div id="selected-device-info" class="summary-box"></div>
 
-            <label for="flavor-select">Доступные вкусы:</label>
-            <select id="flavor-select"></select>
+            <!-- iOS Колесо прокрутки для вкусов -->
+            <div class="ios-picker-wrapper">
+                <div class="ios-picker-highlight"></div>
+                <div id="flavor-picker-list" class="ios-picker-list" onscroll="handleFlavorScroll()"></div>
+            </div>
 
-            <label for="qty-input">Количество:</label>
+            <label for="qty-input" style="font-size: 13px; color: #94a3b8;">Количество:</label>
             <input type="number" id="qty-input" value="1" min="1" max="10">
 
             <button class="main-btn" onclick="goToCheckout()">Перейти к оформлению</button>
-            <button class="main-btn secondary-btn" onclick="showStep('step-device')">Назад к устройствам</button>
+            <button class="main-btn secondary-btn" onclick="showStep('step-device')">Назад</button>
         </div>
 
         <!-- ШАГ 3: Оформление заказа -->
@@ -221,18 +242,19 @@
             <p style="text-align: center; font-size: 18px; margin: 15px 0;"><strong>Итого: <span id="total-price" style="color: #4ade80;">0</span> ₸</strong></p>
 
             <button class="main-btn" onclick="submitOrder()">Отправить заказ</button>
-            <button class="main-btn secondary-btn" onclick="showStep('step-flavor')">Назад к вкусам</button>
+            <button class="main-btn secondary-btn" onclick="showStep('step-flavor')">Назад</button>
         </div>
     </div>
 
     <script>
-        // Ссылка на ваш сервер (включенный туннель или VDS)
         const API_URL = "https://nine-socks-own.loca.lt";
 
         let catalogData = [];
-        let currentIndex = 0;
-        let selectedDevice = null;
+        let selectedDeviceIndex = 0;
+        let selectedFlavorIndex = 0;
         let finalCartItem = null;
+
+        const ITEM_HEIGHT = 50; // Высота одного элемента в пикселях
 
         if (window.Telegram && window.Telegram.WebApp) {
             window.Telegram.WebApp.ready();
@@ -247,97 +269,135 @@
                 catalogData = await response.json();
 
                 if (!catalogData || catalogData.length === 0) {
-                    document.getElementById('slot-item-name').innerText = "Товары закончились";
-                    document.getElementById('slot-item-price').innerText = "";
+                    alert('Товары закончились');
                     return;
                 }
 
-                currentIndex = 0;
-                updateSlotDisplay();
+                renderDevicePicker();
+                updateDeviceSelection(0);
             } catch (err) {
                 console.error(err);
-                document.getElementById('slot-item-name').innerText = "Ошибка соединения";
                 alert('Не удалось подключиться к серверу каталога.');
             }
         }
 
-        function updateSlotDisplay() {
-            if (catalogData.length === 0) return;
-            let item = catalogData[currentIndex];
+        // --- РЕНДЕР БАРАБАНА УСТРОЙСТВ ---
+        function renderDevicePicker() {
+            let list = document.getElementById('device-picker-list');
+            list.innerHTML = '';
             
-            document.getElementById('slot-item-name').innerText = item.name;
-            document.getElementById('slot-item-price').innerText = `${item.price} ₸`;
-            
-            let imgElement = document.getElementById('slot-item-image');
+            catalogData.forEach((item, index) => {
+                let div = document.createElement('div');
+                div.className = `ios-picker-item ${index === 0 ? 'selected' : ''}`;
+                div.innerText = item.name;
+                div.onclick = () => scrollToDevice(index);
+                list.appendChild(div);
+            });
+        }
+
+        function scrollToDevice(index) {
+            let list = document.getElementById('device-picker-list');
+            list.scrollTo({ top: index * ITEM_HEIGHT, behavior: 'smooth' });
+        }
+
+        function handleDeviceScroll() {
+            let list = document.getElementById('device-picker-list');
+            let index = Math.round(list.scrollTop / ITEM_HEIGHT);
+            if (index >= 0 && index < catalogData.length && index !== selectedDeviceIndex) {
+                updateDeviceSelection(index);
+            }
+        }
+
+        function updateDeviceSelection(index) {
+            selectedDeviceIndex = index;
+            let item = catalogData[index];
+
+            // Обновляем визуальное выделение элементов в списке
+            let items = document.querySelectorAll('#device-picker-list .ios-picker-item');
+            items.forEach((el, idx) => {
+                if (idx === index) el.classList.add('selected');
+                else el.classList.remove('selected');
+            });
+
+            // Обновляем цену
+            document.getElementById('device-price').innerText = `${item.price} ₸`;
+
+            // Обновляем картинку с защитой от путей
+            let imgElement = document.getElementById('device-img');
             if (item.image_url) {
                 let imgUrl = item.image_url.startsWith('http') ? item.image_url : API_URL + item.image_url;
                 imgElement.src = imgUrl;
                 imgElement.style.display = 'block';
             } else {
-                imgElement.src = "";
+                imgElement.src = '';
                 imgElement.style.display = 'none';
             }
         }
 
-        function nextDevice() {
-            if (catalogData.length === 0) return;
-            currentIndex = (currentIndex + 1) % catalogData.length;
-            updateSlotDisplay();
-        }
-
-        function prevDevice() {
-            if (catalogData.length === 0) return;
-            currentIndex = (currentIndex - 1 + catalogData.length) % catalogData.length;
-            updateSlotDisplay();
-        }
-
         function confirmDevice() {
-            if (catalogData.length === 0) {
-                alert('Нет доступных устройств!');
-                return;
-            }
+            let device = catalogData[selectedDeviceIndex];
+            document.getElementById('selected-device-info').innerText = `${device.name} — ${device.price} ₸`;
 
-            selectedDevice = catalogData[currentIndex];
-            document.getElementById('selected-device-info').innerText = `${selectedDevice.name} — ${selectedDevice.price} ₸`;
-
-            let flavorSelect = document.getElementById('flavor-select');
-            flavorSelect.innerHTML = '';
-
-            if (selectedDevice.flavors && selectedDevice.flavors.length > 0) {
-                selectedDevice.flavors.forEach(f => {
-                    let opt = document.createElement('option');
-                    opt.value = f.name;
-                    opt.textContent = `${f.name} (Остаток: ${f.stock} шт.)`;
-                    flavorSelect.appendChild(opt);
-                });
-            } else {
-                let opt = document.createElement('option');
-                opt.value = "Стандарт";
-                opt.textContent = "Стандарт";
-                flavorSelect.appendChild(opt);
-            }
-
+            renderFlavorPicker(device.flavors);
             showStep('step-flavor');
+            updateFlavorSelection(0);
+        }
+
+        // --- РЕНДЕР БАРАБАНА ВКУСОВ ---
+        let currentFlavors = [];
+
+        function renderFlavorPicker(flavors) {
+            let list = document.getElementById('flavor-picker-list');
+            list.innerHTML = '';
+            currentFlavors = flavors && flavors.length > 0 ? flavors : [{ name: "Стандарт", stock: 10 }];
+
+            currentFlavors.forEach((f, index) => {
+                let div = document.createElement('div');
+                div.className = `ios-picker-item ${index === 0 ? 'selected' : ''}`;
+                div.innerText = `${f.name} (остаток: ${f.stock})`;
+                div.onclick = () => scrollToFlavor(index);
+                list.appendChild(div);
+            });
+        }
+
+        function scrollToFlavor(index) {
+            let list = document.getElementById('flavor-picker-list');
+            list.scrollTo({ top: index * ITEM_HEIGHT, behavior: 'smooth' });
+        }
+
+        function handleFlavorScroll() {
+            let list = document.getElementById('flavor-picker-list');
+            let index = Math.round(list.scrollTop / ITEM_HEIGHT);
+            if (index >= 0 && index < currentFlavors.length && index !== selectedFlavorIndex) {
+                updateFlavorSelection(index);
+            }
+        }
+
+        function updateFlavorSelection(index) {
+            selectedFlavorIndex = index;
+            let items = document.querySelectorAll('#flavor-picker-list .ios-picker-item');
+            items.forEach((el, idx) => {
+                if (idx === index) el.classList.add('selected');
+                else el.classList.remove('selected');
+            });
         }
 
         function goToCheckout() {
-            let flavorSelect = document.getElementById('flavor-select');
-            let qtyInput = document.getElementById('qty-input');
-
-            let flavor = flavorSelect.value;
-            let quantity = parseInt(qtyInput.value) || 1;
+            let device = catalogData[selectedDeviceIndex];
+            let flavor = currentFlavors[selectedFlavorIndex];
+            let quantity = parseInt(document.getElementById('qty-input').value) || 1;
             
-            let numericPrice = parseFloat(String(selectedDevice.price).replace(/[^0-9.]/g, '')) || 0;
+            let numericPrice = parseFloat(String(device.price).replace(/[^0-9.]/g, '')) || 0;
             let total = numericPrice * quantity;
 
             finalCartItem = {
-                model: selectedDevice.name,
-                flavor: flavor,
+                model: device.name,
+                flavor: flavor.name,
                 quantity: quantity,
                 selling_price: numericPrice
             };
 
-            document.getElementById('order-summary').innerText = `${selectedDevice.name} / Вкус: ${flavor} — ${quantity} шт.`;
+            document.getElementById('order-summary').innerText = `${device.name} / ${flavor.name} — ${quantity} шт.`;
             document.getElementById('total-price').innerText = total.toLocaleString();
 
             showStep('step-checkout');
@@ -380,18 +440,18 @@
                 
                 let result = await response.json();
                 if (response.ok) {
-                    alert('🎉 Заказ успешно оформлен! Спасибо за покупку.');
+                    alert('🎉 Заказ успешно оформлен! Спасибо.');
                     if (window.Telegram && window.Telegram.WebApp) {
                         window.Telegram.WebApp.close();
                     } else {
                         location.reload();
                     }
                 } else {
-                    alert('Ошибка сервера: ' + (result.detail || 'Не удалось создать заказ'));
+                    alert('Ошибка: ' + (result.detail || 'Не удалось создать заказ'));
                 }
             } catch (err) {
                 console.error(err);
-                alert('Не удалось отправить заказ. Проверьте связь с сервером.');
+                alert('Не удалось отправить заказ.');
             }
         }
 
